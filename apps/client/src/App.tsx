@@ -1,0 +1,97 @@
+import { MouseEvent, useRef, useState } from "react";
+import reactLogo from "./assets/react.svg";
+import "./App.css";
+
+function App() {
+  const [isDrawing, setIsDrawing] = useState(false);
+
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  const position = useRef<{ startX: number; startY: number }>({
+    startX: 0,
+    startY: 0,
+  });
+
+  const onMouseDown = (event: MouseEvent<HTMLCanvasElement>) => {
+    setIsDrawing(true);
+    const ctx = canvasRef.current?.getContext("2d");
+    if (ctx) {
+      ctx.beginPath();
+      position.current = {
+        startX: event.nativeEvent.offsetX,
+        startY: event.nativeEvent.offsetY,
+      };
+    }
+  };
+
+  const onMouseMove = (event: MouseEvent<HTMLCanvasElement>) => {
+    const ctx = canvasRef.current?.getContext("2d");
+    if (ctx && isDrawing) {
+      const localX = event.nativeEvent.offsetX;
+      const localY = event.nativeEvent.offsetY;
+
+      ctx.strokeStyle = "green";
+      ctx.moveTo(position.current.startX, position.current.startY);
+      ctx.lineTo(localX, localY);
+      ctx.stroke();
+
+      position.current = {
+        startX: localX,
+        startY: localY,
+      };
+    }
+  };
+
+  const onMouseUp = (event: MouseEvent<HTMLCanvasElement>) => {
+    setIsDrawing(false);
+    position.current = {
+      startX: event.nativeEvent.offsetX,
+      startY: event.nativeEvent.offsetX,
+    };
+  };
+
+  const onMouseEnter = (event: MouseEvent<HTMLCanvasElement>) => {
+    // TODO: solve issue of leaving container, then re-entering drawing a vertical line etc.
+    position.current = {
+      startX: event.nativeEvent.offsetX,
+      startY: event.nativeEvent.offsetX,
+    };
+  };
+
+  const onMouseLeave = (event: MouseEvent<HTMLCanvasElement>) => {
+    setIsDrawing(false);
+    position.current = {
+      startX: event.nativeEvent.offsetX,
+      startY: event.nativeEvent.offsetX,
+    };
+  };
+
+  return (
+    <div className="App">
+      <div>
+        <a href="https://vitejs.dev" target="_blank">
+          <img src="/vite.svg" className="logo" alt="Vite logo" />
+        </a>
+        <a href="https://reactjs.org" target="_blank">
+          <img src={reactLogo} className="logo react" alt="React logo" />
+        </a>
+      </div>
+      <h1>Vite + React</h1>
+      <canvas
+        style={{
+          backgroundColor: "lightGray",
+        }}
+        ref={canvasRef}
+        onMouseEnter={onMouseEnter}
+        onMouseUp={onMouseUp}
+        onMouseMove={onMouseMove}
+        onMouseDown={onMouseDown}
+        onMouseLeave={onMouseLeave}
+        width={500}
+        height={500}
+      />
+    </div>
+  );
+}
+
+export default App;
