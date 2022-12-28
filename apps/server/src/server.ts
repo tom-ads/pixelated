@@ -1,11 +1,13 @@
 import express, { Express } from "express";
 import cors from "cors";
-import CorsConfig from "./config/Cors";
+import CorsConfig from "./config/cors";
 import * as dotenv from "dotenv";
 import validationMiddleware from "./api/Middleware/ValidationMiddleware";
-import { asClass, createContainer } from "awilix";
-import AuthController from "./api/Controllers/AuthController";
-import UserService from "./api/Services/UserService";
+import { asClass, asValue, createContainer } from "awilix";
+import AuthController from "./api/Controller/AuthController";
+import UserService from "./api/Service/UserService";
+import MongoManager from "./database/manager";
+import { DatabaseConfig } from "./config/database";
 
 const app: Express = express();
 app.use(cors(CorsConfig));
@@ -18,15 +20,23 @@ const container = createContainer({
   injectionMode: "CLASSIC",
 });
 
-// Register Controllers
 container.register({
+  // Controllers
   authController: asClass(AuthController),
+
+  // Services
+  userService: asClass(UserService).scoped(),
+
+  // Configs
+  connectionString: asValue(process.env.MONGO_CONNECTION_URL),
+
+  // Database
+  db: asClass(MongoManager).classic(),
 });
 
-// Register Services
-container.register({
-  userService: asClass(UserService).scoped(),
-});
+(async function () {
+  await container.resolve("db").createConnection();
+})();
 
 app.post("/register", container.resolve("authController").register);
 

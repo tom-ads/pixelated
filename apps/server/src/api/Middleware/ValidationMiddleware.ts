@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { matchedData, validationResult } from "express-validator";
-import { Validator } from "../../types";
+import { ValidatorFn, ValidatorReturn } from "../../types";
 
 /* 
   ValidateMiddleware
@@ -17,7 +17,7 @@ function validationMiddleware(
   response: Response,
   next: NextFunction
 ) {
-  request.validate = async function (validator: Validator) {
+  request.validate = async function (validator: ValidatorFn) {
     // Create an instance of the passed in validator
     const validatorInstance = new validator();
     if (!validatorInstance || !validatorInstance?.schema) {
@@ -26,7 +26,7 @@ function validationMiddleware(
 
     // Run each Validator defined inside the schema in parallel
     await Promise.all(
-      validatorInstance.schema.map(
+      Object.values(validatorInstance.schema).map(
         async (validator) => await validator.run(request)
       )
     );
@@ -37,8 +37,7 @@ function validationMiddleware(
       response.status(400).json({ errors: errors.array() });
     }
 
-    // Only allow validated properties through
-    return matchedData(request, { onlyValidData: true });
+    return matchedData(request, { onlyValidData: true }) as ValidatorReturn;
   };
 
   next();
