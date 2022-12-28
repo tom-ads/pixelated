@@ -65,8 +65,8 @@ function App() {
   }
 
   return (
-    <div className="App">
-      <h1>Vite + React</h1>
+    <div className="max-w-sm">
+      <h1 className="font-chango">Vite + React</h1>
       <canvas
         style={{
           backgroundColor: 'lightGray',
@@ -77,8 +77,6 @@ function App() {
         onMouseMove={onMouseMove}
         onMouseDown={onMouseDown}
         onMouseLeave={onMouseLeave}
-        width={500}
-        height={500}
       />
     </div>
   )
