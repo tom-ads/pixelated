@@ -1,8 +1,8 @@
 import { CorsOptions } from "cors";
-import { getClientHost } from "../helpers";
 
 const CorsConfig: CorsOptions = {
-  origin: getClientHost(),
+  credentials: true,
+  origin: process.env.CLIENT_HOST,
 };
 
 export default CorsConfig;

@@ -1,10 +1,11 @@
-import User from "../../Model/User";
-import { RegisterUserDto } from "./dto/RegisterUser";
-import UserExistsDto from "./dto/UserExists";
+import User, { UserDocument } from "../../Model/User";
+import { RegisterUserDto, UserExistsDto, LoginUserDto } from "./dto";
 
 export interface UserServiceContract {
   exists(dto: UserExistsDto): Promise<boolean>;
   registerUser(dto: RegisterUserDto): Promise<any>;
+  loginUser(dto: LoginUserDto): Promise<UserDocument>;
+  findByUsername(username: string): Promise<UserDocument | null>;
 }
 
 class UserService implements UserServiceContract {
@@ -15,12 +16,26 @@ class UserService implements UserServiceContract {
     return !!user;
   }
 
+  public async findByUsername(username: string): Promise<UserDocument | null> {
+    const user = await User.findOne({ username }).exec();
+    return user;
+  }
+
   public async registerUser(dto: RegisterUserDto): Promise<any> {
     const createdUser = await User.create({
       username: dto.username,
       email: dto.email,
       password: dto.password,
     });
+  }
+
+  public async loginUser(dto: LoginUserDto): Promise<any> {
+    const user = User.find({ username: dto.username });
+
+    // get user
+    // prevent repeat session?
+    // else create session
+    // return user
   }
 }
 

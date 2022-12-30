@@ -1,20 +1,23 @@
+// dont pull env when in production, as the host needs to handle this
+import dotenv from "dotenv";
+if (process.env.NODE_ENV !== "production") {
+  dotenv.config();
+}
+
 import express, { Express } from "express";
 import cors from "cors";
-import CorsConfig from "./config/cors";
-import * as dotenv from "dotenv";
 import validationMiddleware from "./api/Middleware/ValidationMiddleware";
 import { asClass, asValue, createContainer } from "awilix";
 import AuthController from "./api/Controller/AuthController";
 import UserService from "./api/Service/UserService";
 import MongoManager from "./database/manager";
-import { DatabaseConfig } from "./config/database";
+import session from "express-session";
+import CorsConfig from "./config/cors";
 
 const app: Express = express();
-app.use(cors(CorsConfig));
 app.use(express.json());
 app.use(validationMiddleware);
-
-dotenv.config();
+app.use(cors(CorsConfig));
 
 const container = createContainer({
   injectionMode: "CLASSIC",
@@ -38,7 +41,11 @@ container.register({
   await container.resolve("db").createConnection();
 })();
 
-app.post("/register", container.resolve("authController").register);
+import { sessionConfig } from "./config/session";
+app.use(session(sessionConfig));
+
+app.post("/auth/register", container.resolve("authController").register);
+app.post("/auth/login", container.resolve("authController").login);
 
 app.listen(process.env.APP_PORT, () => {
   console.log(`[API] Started on port ${process.env.APP_PORT}`);

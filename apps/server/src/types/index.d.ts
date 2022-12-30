@@ -19,9 +19,17 @@ export type ValidatorReturn<T extends ValidationParsed = ValidationParsed> =
 declare global {
   namespace Express {
     export interface Request {
+      // Add validate fn to request object
       validate<T extends ValidationSchema, R extends ValidationParsed<T>>(
         validator: ValidatorFn<T>
       ): ValidatorReturn<R>;
     }
+  }
+}
+
+// Override global express-session "SessionData" type with custom data attributes
+declare module "express-session" {
+  interface SessionData {
+    uid: string;
   }
 }

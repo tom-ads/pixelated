@@ -3,3 +3,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+#root,
+html,
+body {
+  @apply min-h-full h-full w-full bg-purple-90 font-chango text-white tracking-wide;
+}
