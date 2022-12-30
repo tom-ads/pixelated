@@ -9,8 +9,11 @@ export interface IUser {
   createdAt: string;
 }
 
+export interface SerializedUser extends Omit<IUser, "password" | "updatedAt"> {}
+
 interface UserInstanceMethods {
   checkPassword(password: string): Promise<boolean>;
+  serialize(): SerializedUser;
 }
 
 export interface UserDocument extends Document, IUser, UserInstanceMethods {}
@@ -45,6 +48,13 @@ UserSchema.pre("save", async function (next) {
 UserSchema.methods = {
   async checkPassword(password: string) {
     return await bcrypt.compare(password, this.password);
+  },
+  serialize() {
+    return {
+      username: this.username,
+      email: this.email,
+      createdAt: this.createdAt,
+    };
   },
 };
 
