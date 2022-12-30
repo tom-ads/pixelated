@@ -21,10 +21,11 @@ export const sessionConfig: SessionConfig = {
   */
   cookie: {
     maxAge: 1000 * 60 * 60 * 48,
+    httpOnly: true,
     secure: process.env.NODE_ENV === "production",
   },
 
-  saveUninitialized: false,
+  saveUninitialized: true,
 
   store: MongoStore.create({
     client: mongoose.connection.getClient(),
