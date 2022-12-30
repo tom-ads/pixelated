@@ -1,10 +1,14 @@
 import { NextFunction, Request, Response } from "express";
 import { UserServiceContract } from "../Service/UserService";
+import { SessionServiceContract } from "../Service/SessionService";
 import LoginValidator from "../Validator/Auth/LoginValidator";
 import RegisterValidator from "../Validator/Auth/RegisterValidator";
 
 class AuthController {
-  constructor(private readonly userService: UserServiceContract) {
+  constructor(
+    private readonly userService: UserServiceContract,
+    private readonly sessionService: SessionServiceContract
+  ) {
     this.userService = userService;
   }
 
@@ -24,7 +28,7 @@ class AuthController {
 
   login = async (request: Request, response: Response, next: NextFunction) => {
     const payload = await request.validate(LoginValidator);
-    console.log("session", request.session);
+
     const user = await this.userService.findByUsername(payload.username);
     if (!user || !(await user.checkPassword(payload.password))) {
       return response.status(400).json({
@@ -32,14 +36,18 @@ class AuthController {
       });
     }
 
-    request.session.regenerate(function (err) {
-      if (err) next(err);
-      request.session.uid = user.id;
-      request.session.save(function (err) {
-        next(err);
-        console.error(`[Session] Failed to save session for user(${user.id})`);
+    try {
+      await this.sessionService.startSession({
+        uid: user.id,
+        session: request.session,
       });
-    });
+    } catch (err) {
+      next(err);
+      return response.status(500).json({
+        message:
+          "We cannot process your request right now, please try again later.",
+      });
+    }
 
     return response.status(200).json({ message: "valid user" });
   };

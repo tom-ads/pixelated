@@ -10,16 +10,17 @@ import validationMiddleware from "./api/Middleware/ValidationMiddleware";
 import { asClass, asValue, createContainer } from "awilix";
 import AuthController from "./api/Controller/AuthController";
 import UserService from "./api/Service/UserService";
+import SessionService from "./api/Service/SessionService";
 import MongoManager from "./database/manager";
 import session from "express-session";
 import CorsConfig from "./config/cors";
 
-const app: Express = express();
+export const app: Express = express();
 app.use(express.json());
 app.use(validationMiddleware);
 app.use(cors(CorsConfig));
 
-const container = createContainer({
+export const container = createContainer({
   injectionMode: "CLASSIC",
 });
 
@@ -29,6 +30,7 @@ container.register({
 
   // Services
   userService: asClass(UserService).scoped(),
+  sessionService: asClass(SessionService).scoped(),
 
   // Configs
   connectionString: asValue(process.env.MONGO_CONNECTION_URL),
