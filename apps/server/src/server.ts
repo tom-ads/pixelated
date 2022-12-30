@@ -48,6 +48,7 @@ app.use(session(sessionConfig));
 
 app.post("/auth/register", container.resolve("authController").register);
 app.post("/auth/login", container.resolve("authController").login);
+app.get("/auth/session", container.resolve("authController").session);
 
 app.listen(process.env.APP_PORT, () => {
   console.log(`[API] Started on port ${process.env.APP_PORT}`);

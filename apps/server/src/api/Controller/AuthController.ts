@@ -49,7 +49,29 @@ class AuthController {
       });
     }
 
-    return response.status(200).json({ message: "valid user" });
+    return response.status(200).json({
+      user: user.serialize(),
+    });
+  };
+
+  session = async (
+    request: Request,
+    response: Response,
+    next: NextFunction
+  ) => {
+    if (!request.session || !request.session?.uid) {
+      return response.status(401).json({ messsage: "Unauthorized" });
+    }
+
+    try {
+      const user = await this.userService.findById(request.session.uid);
+      return response.status(200).json({
+        user: user?.serialize(),
+      });
+    } catch (err) {
+      next(err);
+      return response.status(500);
+    }
   };
 }
 

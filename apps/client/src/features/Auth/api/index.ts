@@ -20,11 +20,11 @@ const authEndpoints = appApi.injectEndpoints({
         body,
       }),
     }),
-    session: build.query<SessionResponse, void>({
+    getSession: build.query<SessionResponse, void>({
       query: () => `${authBasePath}/session `,
     }),
   }),
   overrideExisting: false,
 })
 
-export const { useRegisterMutation, useLoginMutation, useSessionQuery } = authEndpoints
+export const { useRegisterMutation, useLoginMutation, useGetSessionQuery } = authEndpoints

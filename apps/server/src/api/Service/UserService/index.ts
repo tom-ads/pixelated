@@ -6,6 +6,7 @@ export interface UserServiceContract {
   registerUser(dto: RegisterUserDto): Promise<any>;
   loginUser(dto: LoginUserDto): Promise<UserDocument>;
   findByUsername(username: string): Promise<UserDocument | null>;
+  findById(uid: string): Promise<UserDocument | null>;
 }
 
 class UserService implements UserServiceContract {
@@ -18,6 +19,11 @@ class UserService implements UserServiceContract {
 
   public async findByUsername(username: string): Promise<UserDocument | null> {
     const user = await User.findOne({ username }).exec();
+    return user;
+  }
+
+  public async findById(uid: string): Promise<UserDocument | null> {
+    const user = await User.findById(uid).exec();
     return user;
   }
 
