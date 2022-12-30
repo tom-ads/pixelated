@@ -9,3 +9,13 @@ html,
 body {
   @apply min-h-full h-full w-full bg-purple-90 font-chango text-white tracking-wide;
 }
+
+@layer base {
+  .public-wrapper {
+    @apply md:max-w-lg md:px-8 mx-auto px-4 w-full min-h-full;
+  }
+
+  .private-wrapper {
+    @apply px-4 max-w-[1222px] mx-auto w-full min-h-full py-12;
+  }
+}
