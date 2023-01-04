@@ -1,3 +1,4 @@
+import { Session, SessionData } from "express-session";
 import { Schema, ValidationChain } from "express-validator";
 
 export {};
@@ -31,5 +32,15 @@ declare global {
 declare module "express-session" {
   interface SessionData {
     uid: string;
+    authenticated: boolean;
+  }
+}
+
+declare module "http" {
+  interface IncomingMessage {
+    session: Session & {
+      uid: string;
+      authenticated: boolean;
+    };
   }
 }

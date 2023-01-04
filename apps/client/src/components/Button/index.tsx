@@ -11,7 +11,7 @@ export const button = cva(
         primary:
           'text-purple-90 bg-yellow-60 border-yellow-60 hover:bg-yellow-80 hover:border-yellow-80 active:bg-yellow-60 active:border-yellow-60 active:shadow-yellow-60 focus-visible:bg-yellow-80 focus-visible:border-yellow-80 focus:bg-yellow-80 focus:border-yellow-80 focus:shadow-yellow-80',
         blank:
-          'text-white hover:text-yellow-80 active:text-yellow-60 bg-none border-none shadow-none !p-0',
+          'text-white hover:text-yellow-80 active:text-yellow-60 bg-none border-none !shadow-none !p-0',
       },
       size: {
         sm: 'text-sm py-2 px-4 shadow-sm',
@@ -21,12 +21,32 @@ export const button = cva(
       },
       block: {
         true: 'w-full',
-        false: 'w-min',
+        false: '',
+      },
+      danger: {
+        true: '',
+        false: '',
       },
     },
+    compoundVariants: [
+      {
+        variant: 'primary',
+        danger: true,
+        className:
+          'bg-red-50 border-red-50 text-white hover:bg-red-80 hover:border-red-80 active:bg-red-50 active:border-red-80 focus-visible:bg-red-50 focus-visible:border-red-50 focus:bg-red-50 focus:border-red-50 focus:shadow-red-80',
+      },
+      {
+        variant: 'blank',
+        danger: true,
+        className:
+          'text-red-50 hover:text-red-80 active:text-red-50 focus-visible:text-red-80 focus:text-red-80',
+      },
+    ],
     defaultVariants: {
       variant: 'primary',
       size: 'lg',
+      danger: false,
+      block: false,
     },
   },
 )
@@ -40,7 +60,7 @@ interface ButtonProps
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button(
-  { className, type = 'button', loading, block, ...props },
+  { className, type = 'button', loading, block, danger, ...props },
   ref,
 ) {
   return (
@@ -48,7 +68,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       {...props}
       ref={ref}
       type={type}
-      className={classNames(button({ block, ...props }), className)}
+      disabled={loading}
+      className={classNames(button({ block, danger, ...props }), className)}
     >
       <div className="absolute inset-0 grid place-content-center">
         <Spinner

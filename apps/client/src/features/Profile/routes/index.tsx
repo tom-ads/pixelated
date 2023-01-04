@@ -4,7 +4,7 @@ import { ProfilePage } from '../pages'
 export const ProfileRoutes = (): JSX.Element => {
   return (
     <Routes>
-      <Route index element={<ProfilePage />} />
+      <Route path="" element={<ProfilePage />} />
     </Routes>
   )
 }

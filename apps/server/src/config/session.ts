@@ -25,7 +25,7 @@ export const sessionConfig: SessionConfig = {
     secure: process.env.NODE_ENV === "production",
   },
 
-  saveUninitialized: true,
+  saveUninitialized: false,
 
   store: MongoStore.create({
     client: mongoose.connection.getClient(),
@@ -33,5 +33,5 @@ export const sessionConfig: SessionConfig = {
     collectionName: "sessions",
   }),
 
-  resave: true,
+  resave: false,
 };

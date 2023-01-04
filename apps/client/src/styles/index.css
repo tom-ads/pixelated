@@ -16,6 +16,6 @@ body {
   }
 
   .private-wrapper {
-    @apply px-4 max-w-[1222px] mx-auto w-full min-h-full py-12;
+    @apply px-4 max-w-[1222px] mx-auto w-full min-h-full py-12 flex flex-col;
   }
 }

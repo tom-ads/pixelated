@@ -3,13 +3,17 @@ import { UserServiceContract } from "../Service/UserService";
 import { SessionServiceContract } from "../Service/SessionService";
 import LoginValidator from "../Validator/Auth/LoginValidator";
 import RegisterValidator from "../Validator/Auth/RegisterValidator";
+import { PartyServiceContract } from "../Service/PartyService";
 
 class AuthController {
   constructor(
     private readonly userService: UserServiceContract,
+    private readonly partyService: PartyServiceContract,
     private readonly sessionService: SessionServiceContract
   ) {
     this.userService = userService;
+    this.partyService = partyService;
+    this.sessionService = sessionService;
   }
 
   register = async (request: Request, response: Response) => {
@@ -37,12 +41,12 @@ class AuthController {
     }
 
     try {
-      await this.sessionService.startSession({
-        uid: user.id,
-        session: request.session,
-      });
-    } catch (err) {
-      next(err);
+      await this.sessionService.regenSession(request.session);
+      request.session.uid = user.id;
+      request.session.authenticated = true;
+      await this.sessionService.saveSession(request.session);
+    } catch (error) {
+      next(error);
       return response.status(500).json({
         message:
           "We cannot process your request right now, please try again later.",
@@ -65,8 +69,11 @@ class AuthController {
 
     try {
       const user = await this.userService.findById(request.session.uid);
+      const party = await this.partyService.findByUsername(user!.username);
+
       return response.status(200).json({
         user: user?.serialize(),
+        party: party?.serialize(),
       });
     } catch (err) {
       next(err);

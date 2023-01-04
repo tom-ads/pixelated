@@ -1,7 +1,9 @@
+import { ProfileBanner } from '../../components'
+
 export const ProfilePage = (): JSX.Element => {
   return (
-    <div>
-      <p>profile page</p>
+    <div className="flex-grow">
+      <ProfileBanner />
     </div>
   )
 }

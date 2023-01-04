@@ -1,8 +1,10 @@
 import { FormInput, Form, FormControl, Button, InlineLink } from '@/components'
 import FormErrorMessage from '@/components/Forms/ErrorMessage'
 import { FormPasswordInput } from '@/components/Forms/PasswordInput'
+import { RootState } from '@/store'
 import { setAuth } from '@/store/slices/auth'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
+import { Navigate, useLocation } from 'react-router-dom'
 import { z } from 'zod'
 import { useLoginMutation } from '../../api'
 
@@ -18,6 +20,11 @@ const ValidationSchema = z.object({
 
 export const LoginPage = (): JSX.Element => {
   const dispatch = useDispatch()
+  const location = useLocation()
+
+  const { isAuthenticated } = useSelector((state: RootState) => ({
+    isAuthenticated: state.auth.isAuthenticated,
+  }))
 
   const [triggerLogin, { isError: didLoginError, isLoading: isLoggingIn }] = useLoginMutation()
 
@@ -28,6 +35,11 @@ export const LoginPage = (): JSX.Element => {
       // Error is handled with didLoginError
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       .catch((err) => {})
+  }
+
+  if (isAuthenticated) {
+    const to = location?.state?.from?.pathname ?? '/profile'
+    return <Navigate to={to} replace />
   }
 
   return (
