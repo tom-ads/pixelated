@@ -21,7 +21,7 @@ export const button = cva(
       },
       block: {
         true: 'w-full',
-        false: '',
+        false: 'w-min whitespace-nowrap',
       },
       danger: {
         true: '',

@@ -4,7 +4,7 @@ import { RootState } from '@/store'
 import { useSelector } from 'react-redux'
 import { Navigate } from 'react-router-dom'
 
-export const PartyPage = (): JSX.Element => {
+export const ViewPartyPage = (): JSX.Element => {
   const { party } = useSelector((state: RootState) => ({
     party: state.party,
   }))

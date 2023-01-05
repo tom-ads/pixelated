@@ -3,7 +3,7 @@ import { FetchBaseQueryError } from '@reduxjs/toolkit/dist/query'
 import { useEffect } from 'react'
 import { FieldValues, Path, UseFormSetError } from 'react-hook-form'
 
-function isFetchBaseQueryError(error: unknown): error is FetchBaseQueryError {
+export function isFetchBaseQueryError(error: unknown): error is FetchBaseQueryError {
   return typeof error === 'object' && error != null && 'status' in error
 }
 
@@ -14,9 +14,9 @@ export function useQueryError<TFields extends FieldValues>(
   useEffect(() => {
     if (isFetchBaseQueryError(error)) {
       const fields = error.data as { [key: string]: any }[]
-      // Object.entries(fields).forEach(([field, message]) =>
-      //   setError(field as Path<TFields>, message),
-      // )
+      Object.entries(fields).forEach(([field, message]) =>
+        setError(field as Path<TFields>, message),
+      )
     }
   }, [error])
 }

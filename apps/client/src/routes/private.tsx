@@ -1,5 +1,5 @@
 import { AuthLayout } from '@/components'
-import { PartyRoutes } from '@/features/Game'
+import { PartyRoutes } from '@/features/Party'
 import { ProfileRoutes } from '@/features/Profile'
 import { RootState } from '@/store'
 import { useSelector } from 'react-redux'

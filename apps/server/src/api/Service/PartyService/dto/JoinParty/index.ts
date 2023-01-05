@@ -1,5 +1,5 @@
-type JoinParty = {
+type JoinPartyDto = {
   code: string;
 };
 
-export default JoinParty;
+export default JoinPartyDto;

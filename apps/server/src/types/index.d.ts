@@ -1,5 +1,6 @@
 import { Session, SessionData } from "express-session";
 import { Schema, ValidationChain } from "express-validator";
+import { UserDocument } from "../api/Model/User";
 
 export {};
 
@@ -40,6 +41,7 @@ declare module "http" {
   interface IncomingMessage {
     session: Session & {
       uid: string;
+      user: UserDocument;
       authenticated: boolean;
     };
   }

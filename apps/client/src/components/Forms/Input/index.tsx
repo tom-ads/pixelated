@@ -2,7 +2,7 @@ import { cva, VariantProps } from 'class-variance-authority'
 import { InputHTMLAttributes } from 'react'
 
 export const input = cva(
-  'rounded-lg w-full transition-all outline-none appearance-none bg-cyan-80 border border-transparent placeholder:text-gray-30 text-white',
+  'rounded-lg w-full transition-all outline-none appearance-none bg-cyan-80 border placeholder:text-gray-30 text-white',
   {
     variants: {
       size: {
@@ -14,7 +14,7 @@ export const input = cva(
       error: {
         true: 'border-red-50 shadow-red-50 active:shadow-red-50 hover:shadow-red-50',
         false:
-          'focus:border-yellow-60 focus:shadow-yellow-60 active:border-yellow-70 active:shadow-yellow-70',
+          'focus:border-yellow-60 focus:shadow-yellow-60 active:border-yellow-70 active:shadow-yellow-70 border-transparent',
       },
     },
     defaultVariants: {
