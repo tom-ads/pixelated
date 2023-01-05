@@ -68,13 +68,13 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       {...props}
       ref={ref}
       type={type}
-      disabled={loading}
       className={classNames(button({ block, danger, ...props }), className)}
     >
       <div className="absolute inset-0 grid place-content-center">
         <Spinner
           className={classNames('h-2 text-purple-90', {
-            visible: loading,
+            'visible ': loading,
+            'text-red-50': danger,
             invisible: !loading,
           })}
         />

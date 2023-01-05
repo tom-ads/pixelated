@@ -1,4 +1,7 @@
 import { Socket } from "socket.io";
+import { socketResponse } from "../../../helpers";
+import SocketEvent from "../../Enum/SocketEvent";
+import SocketStatus from "../../Enum/SocketStatus";
 import Party, { PartyDocument, PartySchema } from "../../Model/Party";
 import { UserServiceContract } from "../UserService";
 import { CreatePartyDto, LeavePartyDto } from "./dto";
@@ -32,13 +35,32 @@ export class PartyService implements PartyServiceContract {
     }
 
     const existingParty = await this.findByUsername(user.username);
-    console.log("existing party", existingParty);
-    if (existingParty) {
-      // Pull user out of party
-      existingParty.update({}, { $pull: { username: user.username } });
+    if (!existingParty) {
+      throw new Error("Party does not exist");
     }
 
-    console.log("updated party", existingParty);
+    if (existingParty.members?.length === 1) {
+      await existingParty.delete();
+      socket.to(existingParty.id).disconnectSockets();
+      return;
+    }
+
+    // Remove user from party
+    await existingParty.updateOne({
+      $pull: { members: { username: user.username } },
+    });
+
+    // TODO: transfer ownership to another party member
+
+    // Broadcast to party members that user has left
+    socket.broadcast.to(existingParty.id).emit(
+      SocketEvent.USER_LEFT,
+      socketResponse(SocketStatus.SUCCESS, {
+        data: {
+          party: existingParty,
+        },
+      })
+    );
   }
 
   public async createParty(
@@ -75,6 +97,8 @@ export class PartyService implements PartyServiceContract {
     console.log(
       `[Party] Created party ${createdParty.name}(${createdParty.id})`
     );
+
+    socket.join(createdParty.id);
 
     return createdParty;
   }

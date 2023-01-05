@@ -103,8 +103,7 @@ io.on("connection", function (socket: Socket) {
 
   socket.on("leave-party", async (_, callback) => {
     await container.resolve("partyService").leaveParty(socket);
-
-    callback("left party");
+    callback();
   });
 
   socket.on("error", (error) => {
@@ -113,7 +112,7 @@ io.on("connection", function (socket: Socket) {
     }
   });
 
-  // socket.on("disconnect", () => {
-  //   console.log("disconnecting...");
-  // });
+  socket.on("disconnect", () => {
+    console.log("disconnecting...");
+  });
 });
