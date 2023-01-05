@@ -102,24 +102,6 @@ export class PartyService implements PartyServiceContract {
 
     return createdParty;
   }
-
-  public async getParty(socket: Socket): Promise<PartyDocument> {
-    // Find user
-    const user = await this.userService.findById(socket.request.session.uid);
-    if (!user) {
-      throw new Error("Unable to find session user");
-    }
-
-    // Find party
-    const party = await this.findByUsername(user.username);
-    if (!party) {
-      throw new Error("Unable to find party");
-    }
-
-    console.log(`[Party] Retrevied party ${party.name}:${party.id}`);
-
-    return party;
-  }
 }
 
 export default PartyService;

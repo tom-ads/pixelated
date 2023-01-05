@@ -1,3 +1,3 @@
-export * from "./LoginUser";
-export * from "./RegisterUser";
+export * from "./Login";
+export * from "./Register";
 export * from "./UserExists";
