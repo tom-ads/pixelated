@@ -8,9 +8,9 @@ import express, { Express, NextFunction, Request, Response } from "express";
 import cors from "cors";
 import { Server, Socket } from "socket.io";
 import validationMiddleware from "./api/Middleware/ValidationMiddleware";
-import { asClass, asFunction, asValue, createContainer } from "awilix";
+import { asClass, asValue, createContainer } from "awilix";
 import AuthController from "./api/Controller/AuthController";
-import UserService, { UserServiceContract } from "./api/Service/UserService";
+import UserService from "./api/Service/UserService";
 import SessionService from "./api/Service/SessionService";
 import MongoManager from "./database/manager";
 import session from "express-session";
@@ -19,6 +19,13 @@ import http from "http";
 import PartyService, { PartyServiceContract } from "./api/Service/PartyService";
 import { PartyDocument } from "./api/Model/Party";
 import { CreatePartyDto } from "./api/Service/PartyService/dto";
+import SocketEvent from "./api/Enum/SocketEvent";
+import { socketResponse } from "./helpers";
+import SocketStatus from "./api/Enum/SocketStatus";
+import JoinPartyDto from "./api/Service/PartyService/dto/JoinParty";
+import SocketError from "./api/Enum/SocketError";
+import { UserDocument } from "./api/Model/User";
+import { PartyChannel } from "./api/Channels/PartyChannel";
 
 // Create server
 export const app: Express = express();
@@ -52,11 +59,8 @@ export const container = createContainer({
   // Database
   db: asClass(MongoManager).classic(),
 
-  // Web Sockets
-  io: asFunction(() => {
-    const io = new Server(server);
-    return io;
-  }),
+  // Channels
+  partyChannel: asClass(PartyChannel).scoped(),
 });
 
 (async function () {
@@ -64,12 +68,6 @@ export const container = createContainer({
 })();
 
 import { sessionConfig } from "./config/session";
-import SocketEvent from "./api/Enum/SocketEvent";
-import { socketResponse } from "./helpers";
-import SocketStatus from "./api/Enum/SocketStatus";
-import JoinPartyDto from "./api/Service/PartyService/dto/JoinParty";
-import SocketError from "./api/Enum/SocketError";
-import { UserDocument } from "./api/Model/User";
 const sessionMiddleware = session(sessionConfig);
 app.use(sessionMiddleware);
 
@@ -92,7 +90,7 @@ io.use((socket, next) => {
 io.use(async (socket, next) => {
   const session = socket.request.session;
   if (!session || !session?.authenticated) {
-    next(new Error("Unauthorized"));
+    return next(new Error("Unauthorized"));
   }
 
   // Set auth user onto session object
@@ -105,77 +103,23 @@ io.use(async (socket, next) => {
 });
 
 io.on("connection", function (socket: Socket) {
+  // TODO: check new connection isn't part of a party...
+
   socket.on(
     SocketEvent.CREATE_PARTY,
     async (data: CreatePartyDto, callback) => {
-      const createdParty: PartyDocument = await container
-        .resolve("partyService")
-        .createParty(socket, data);
-
-      callback(
-        socketResponse(SocketStatus.SUCCESS, { data: createdParty.serialize() })
-      );
+      await container
+        .resolve("partyChannel")
+        .createParty(socket, data, callback);
     }
   );
 
   socket.on(SocketEvent.LEAVE_PARTY, async (callback) => {
-    await container.resolve("partyService").leaveParty(socket);
-    callback(
-      socketResponse(SocketStatus.SUCCESS, {
-        data: "success",
-      })
-    );
+    await container.resolve("partyChannel").leaveParty(socket, callback);
   });
 
   socket.on(SocketEvent.JOIN_PARTY, async (data: JoinPartyDto, callback) => {
-    const session = socket.request.session;
-    const partyService: PartyServiceContract = await container.resolve(
-      "partyService"
-    );
-
-    // Check party exists
-    const party = await partyService.findByCode(data.code);
-    if (!party) {
-      return callback(
-        socketResponse(SocketStatus.ERROR, {
-          error: {
-            type: SocketError.INVALID_PARTY,
-            message: "Party with that code does not exist",
-          },
-        })
-      );
-    }
-
-    try {
-      // Socket joins party and returns party
-      await partyService.addPartyMember(party, session.user);
-      socket.join(party.id);
-      callback(
-        socketResponse(SocketStatus.SUCCESS, {
-          data: party.serialize(),
-        })
-      );
-
-      // Broadcast to party members that a user joined
-      socket.broadcast.to(party.id).emit(
-        SocketEvent.USER_JOINED,
-        socketResponse(SocketStatus.SUCCESS, {
-          data: {
-            party: party.serialize(),
-            message: `${session.user.username} joined the party`,
-          },
-        })
-      );
-    } catch {
-      callback(
-        socketResponse(SocketStatus.ERROR, {
-          error: {
-            type: SocketError.CANNOT_JOIN,
-            message: "Unable to join party, please try again later.",
-          },
-        })
-      );
-    }
+    await container.resolve("partyChannel").joinParty(socket, data, callback);
   });
 
   socket.on("error", (error) => {
