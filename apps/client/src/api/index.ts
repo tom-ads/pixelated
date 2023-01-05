@@ -2,15 +2,20 @@ import { transformResponse } from '@/helpers/query'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { io, Socket } from 'socket.io-client'
 
-let socket: Socket
-export const getSocketConnection = () => {
-  if (!socket) {
-    socket = io(import.meta.env.VITE_PIXELATED_API_BASE_URL, {
-      withCredentials: true,
-    })
-  }
+let socket: Socket = io(import.meta.env.VITE_PIXELATED_API_BASE_URL, {
+  withCredentials: true,
+}).connect()
 
-  return socket
+export const getSocketConnection = async (): Promise<Socket> => {
+  return new Promise((resolve) => {
+    if (!socket) {
+      socket = io(import.meta.env.VITE_PIXELATED_API_BASE_URL, {
+        withCredentials: true,
+      }).connect()
+    }
+
+    return resolve(socket)
+  })
 }
 
 /* 

@@ -26,6 +26,7 @@ module.exports = {
       cyan: {
         90: '#1C2E5A',
         80: '#22386D',
+        70: '#243C75',
       },
       yellow: {
         80: '#FFE700',

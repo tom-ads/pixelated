@@ -102,8 +102,14 @@ io.use(async (socket, next) => {
   next();
 });
 
-io.on("connection", function (socket: Socket) {
-  // TODO: check new connection isn't part of a party...
+io.on("connection", async function (socket: Socket) {
+  const party: PartyDocument = await container
+    .resolve("partyService")
+    .findByUsername(socket.request.session?.user?.username);
+
+  if (party) {
+    socket.join(party.id);
+  }
 
   socket.on(
     SocketEvent.CREATE_PARTY,

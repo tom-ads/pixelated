@@ -11,8 +11,9 @@ import { CreatePartyResponse, JoinPartyResponse } from './types/response'
 const partyEndpoints = appApi.injectEndpoints({
   endpoints: (build) => ({
     createParty: build.mutation<CreatePartyResponse, CreatePartyRequest>({
-      queryFn: (data: CreatePartyRequest, api: BaseQueryApi) => {
-        const socket = getSocketConnection()
+      queryFn: async (data: CreatePartyRequest, api: BaseQueryApi) => {
+        const socket = await getSocketConnection()
+
         return new Promise((resolve) => {
           socket.emit(SocketEvent.CREATE_PARTY, data, (response: SocketResponse<Party>) => {
             if (response.type === SocketStatus.ERROR) {
@@ -28,8 +29,8 @@ const partyEndpoints = appApi.injectEndpoints({
     }),
 
     joinParty: build.mutation<JoinPartyResponse, JoinPartyRequest>({
-      queryFn: (data: JoinPartyRequest, api: BaseQueryApi) => {
-        const socket = getSocketConnection()
+      queryFn: async (data: JoinPartyRequest, api: BaseQueryApi) => {
+        const socket = await getSocketConnection()
         return new Promise((resolve) => {
           socket.emit(SocketEvent.JOIN_PARTY, data, (response: SocketResponse<Party>) => {
             if (response.type === SocketStatus.ERROR) {
@@ -45,8 +46,9 @@ const partyEndpoints = appApi.injectEndpoints({
     }),
 
     leaveParty: build.mutation<void, void>({
-      queryFn: (_, api: BaseQueryApi) => {
-        const socket = getSocketConnection()
+      queryFn: async (_, api: BaseQueryApi) => {
+        const socket = await getSocketConnection()
+
         return new Promise((resolve) => {
           socket.emit(SocketEvent.LEAVE_PARTY, (response: SocketResponse<void>) => {
             if (response.type === SocketStatus.ERROR) {
@@ -60,9 +62,54 @@ const partyEndpoints = appApi.injectEndpoints({
         })
       },
     }),
+
+    getParty: build.query<{ party: Party; message: string }, void>({
+      // Set default query function, will ignore baseQuery
+      queryFn: () => ({ data: { party: { name: '', code: '', members: [] }, message: '' } }),
+      // Handle WS for parties and caching to store
+      async onCacheEntryAdded(
+        _,
+        { cacheDataLoaded, updateCachedData, cacheEntryRemoved, dispatch },
+      ) {
+        try {
+          await cacheDataLoaded
+
+          // Get or open a web socket connection
+          const socket = await getSocketConnection()
+
+          // Receive party & cache it
+          socket.on(
+            SocketEvent.USER_JOINED,
+            (response: SocketResponse<{ party: Party; message: string }>) => {
+              dispatch(setParty(response.result.data.party))
+              updateCachedData(() => response.result.data)
+            },
+          )
+
+          socket.on(
+            SocketEvent.USER_LEFT,
+            (response: SocketResponse<{ party: Party; message: string }>) => {
+              dispatch(setParty(response.result.data.party))
+              updateCachedData(() => response.result.data)
+            },
+          )
+
+          // Cleanup
+          await cacheEntryRemoved
+          socket.off(SocketEvent.USER_JOINED)
+          socket.off(SocketEvent.USER_LEFT)
+        } catch {
+          console.log('throwing cache')
+        }
+      },
+    }),
   }),
   overrideExisting: false,
 })
 
-export const { useCreatePartyMutation, useLeavePartyMutation, useJoinPartyMutation } =
-  partyEndpoints
+export const {
+  useCreatePartyMutation,
+  useLeavePartyMutation,
+  useJoinPartyMutation,
+  useGetPartyQuery,
+} = partyEndpoints

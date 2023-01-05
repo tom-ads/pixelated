@@ -1,8 +1,9 @@
 import { Button } from '@/components'
-import { useLeavePartyMutation } from '@/features/Party'
+import { useGetPartyQuery, useLeavePartyMutation } from '@/features/Party'
 import { RootState } from '@/store'
 import { useSelector } from 'react-redux'
 import { Navigate } from 'react-router-dom'
+import { PartyMembersCard } from '../../components/Cards'
 
 export const ViewPartyPage = (): JSX.Element => {
   const { party } = useSelector((state: RootState) => ({
@@ -10,6 +11,8 @@ export const ViewPartyPage = (): JSX.Element => {
   }))
 
   const [leaveParty, { isLoading: isLeaving }] = useLeavePartyMutation()
+
+  const { data } = useGetPartyQuery()
 
   if (!party.isActive) {
     return <Navigate to="/party" replace />
@@ -27,7 +30,11 @@ export const ViewPartyPage = (): JSX.Element => {
         </p>
       </div>
 
-      <div className="py-12"></div>
+      <div className="py-12 grid grid-cols-6 md:grid-cols-12 min-h-[500px] grid-row-1">
+        <div className="col-start-1 col-span-2 md:col-span-4">
+          <PartyMembersCard />
+        </div>
+      </div>
 
       <div className="flex justify-between gap-4 flex-wrap items-center">
         <Button variant="blank" onClick={() => leaveParty()} loading={isLeaving} danger>

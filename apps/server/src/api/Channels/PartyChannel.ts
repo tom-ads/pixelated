@@ -76,6 +76,18 @@ export class PartyChannel {
       );
     }
 
+    // Limity party size to six
+    if (party.members.length >= 6) {
+      return callback(
+        socketResponse(SocketStatus.ERROR, {
+          error: {
+            type: SocketError.MEMBER_LIMIT,
+            message: "Party is full",
+          },
+        })
+      );
+    }
+
     try {
       // Add party member to party document
       const updatedParty = await this.partyService.addPartyMember({
