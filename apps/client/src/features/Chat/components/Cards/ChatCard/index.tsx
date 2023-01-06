@@ -1,11 +1,11 @@
 import { Card } from '@/components'
-import { ChatList } from '../../ChatList'
+import { ChatContainer } from '../../ChatContainer'
 import { SendMessageForm } from '../../Forms'
 
 export const ChatCard = (): JSX.Element => {
   return (
     <Card className="min-h-full">
-      <ChatList />
+      <ChatContainer />
 
       <div className="mt-auto flex">
         <SendMessageForm />
