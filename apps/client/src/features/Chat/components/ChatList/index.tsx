@@ -1,6 +1,6 @@
 import { useAutoScroll } from '@/hooks/useAutoScroll'
 import { RootState } from '@/store'
-import { ReactNode, useEffect, useRef } from 'react'
+import { ReactNode, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 
 type ChatListProps = {
@@ -8,6 +8,8 @@ type ChatListProps = {
 }
 
 export const ChatList = ({ children }: ChatListProps): JSX.Element => {
+  const [initialScroll, setInitialScroll] = useState(false)
+
   const scrollRef = useRef<HTMLUListElement>(null)
 
   const { messages } = useSelector((state: RootState) => ({
@@ -16,18 +18,21 @@ export const ChatList = ({ children }: ChatListProps): JSX.Element => {
 
   const { scrollToBottom } = useAutoScroll<HTMLUListElement | null>(scrollRef, {
     deps: [messages],
-    offset: 600,
+    offset: messages?.length ? 600 : 0,
   })
 
   useEffect(() => {
-    scrollToBottom()
-  }, [])
+    if (messages?.length && !initialScroll) {
+      scrollToBottom()
+      setInitialScroll(true)
+    }
+  }, [messages?.length, initialScroll])
 
   return (
-    <div className="relative flex flex-col flex-grow">
+    <div className="relative flex flex-col">
       <ul
         ref={scrollRef}
-        className="flex flex-col gap-y-4 overflow-y-scroll my-4 max-h-[400px] scrollbar-hide"
+        className="flex flex-col gap-y-4 overflow-y-auto my-4 max-h-[370px] scrollbar-hide"
       >
         {children}
       </ul>

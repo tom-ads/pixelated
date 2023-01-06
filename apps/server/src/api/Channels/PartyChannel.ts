@@ -58,6 +58,7 @@ export class PartyChannel {
 
     // Check party exists
     const party = await this.partyService.findByCode(data.code);
+    console.log(party);
     if (!party) {
       return callback(
         socketResponse(SocketStatus.ERROR, {

@@ -70,6 +70,9 @@ export const container = createContainer({
 })();
 
 import { sessionConfig } from "./config/session";
+import { MessageDocument } from "./api/Model/Message";
+import { socketResponse } from "./helpers";
+import SocketStatus from "./api/Enum/SocketStatus";
 const sessionMiddleware = session(sessionConfig);
 app.use(sessionMiddleware);
 
@@ -111,6 +114,27 @@ io.on("connection", async function (socket: Socket) {
 
   if (party) {
     socket.join(party.id);
+
+    const previousMessages: MessageDocument[] = await container
+      .resolve("chatService")
+      .getMessages({ partyId: party.id, sortBy: "asc" });
+
+    /* 
+      We need to give the client time to initialise the getParty events
+      before we can emit the USER_RECONNECTED event, else it won't be
+      processed by the client in time.
+    */
+    setTimeout(() => {
+      socket.emit(
+        SocketEvent.USER_RECONNECTED,
+        socketResponse(SocketStatus.SUCCESS, {
+          data: {
+            party: party.serialize(),
+            messages: previousMessages?.map((message) => message.serialize()),
+          },
+        })
+      );
+    }, 200);
   }
 
   socket.on(

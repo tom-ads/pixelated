@@ -5,7 +5,7 @@ import SocketStatus from '@/enums/SocketStatus'
 import { appendMessage } from '@/store/slices/chat'
 import { Message } from '@/types'
 import { BaseQueryApi, FetchBaseQueryError } from '@reduxjs/toolkit/dist/query'
-import appApi, { getSocketConnection } from 'api'
+import appApi, { appSockedConnected, appSocket } from 'api'
 import { GetMessagesRequest, SendMessageRequest } from './types/requests'
 import { GetMessagesResponse, SendMessageResponse } from './types/response'
 import { v4 as uuidv4 } from 'uuid'
@@ -14,10 +14,10 @@ const chatEndpoints = appApi.injectEndpoints({
   endpoints: (build) => ({
     sendMessage: build.mutation<SendMessageResponse, SendMessageRequest>({
       queryFn: async (data: SendMessageRequest, api: BaseQueryApi) => {
-        const socket = await getSocketConnection()
+        await appSockedConnected
 
         return new Promise((resolve) => {
-          socket.emit(SocketEvent.SEND_MESSAGE, data, (response: SocketResponse<Message>) => {
+          appSocket.emit(SocketEvent.SEND_MESSAGE, data, (response: SocketResponse<Message>) => {
             const didError = response.type === SocketStatus.ERROR
             resolve(
               didError
@@ -52,20 +52,17 @@ const chatEndpoints = appApi.injectEndpoints({
           await cacheDataLoaded
 
           // Get or open a web socket connection
-          const socket = await getSocketConnection()
-          // socket.on('connected', (response: SocketResponse<Message[]>) => {
-          //   // emit to get all party messages
-          // })
+          await appSockedConnected
 
-          socket.on(SocketEvent.RECEIVE_MESSAGE, (response: SocketResponse<Message>) => {
+          appSocket.on(SocketEvent.RECEIVE_MESSAGE, (response: SocketResponse<Message>) => {
             dispatch(appendMessage(response.result.data))
             updateCachedData((draft) => [...draft, response.result.data])
           })
 
           // Cleanup
           await cacheEntryRemoved
-          socket.off('connected')
-          socket.off(SocketEvent.RECEIVE_MESSAGE)
+          appSocket.off('connected')
+          appSocket.off(SocketEvent.RECEIVE_MESSAGE)
         } catch {
           console.log('throwing cache')
         }

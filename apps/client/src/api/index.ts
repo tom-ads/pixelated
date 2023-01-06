@@ -2,21 +2,17 @@ import { transformResponse } from '@/helpers/query'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { io, Socket } from 'socket.io-client'
 
-let socket: Socket = io(import.meta.env.VITE_PIXELATED_API_BASE_URL, {
-  withCredentials: true,
-}).connect()
-
-export const getSocketConnection = async (): Promise<Socket> => {
-  return new Promise((resolve) => {
-    if (!socket) {
-      socket = io(import.meta.env.VITE_PIXELATED_API_BASE_URL, {
-        withCredentials: true,
-      }).connect()
-    }
-
-    return resolve(socket)
+export let appSocket: Socket
+export const appSockedConnected = new Promise<void>((resolve) => {
+  if (!appSocket) {
+    appSocket = io(import.meta.env.VITE_PIXELATED_API_BASE_URL, {
+      withCredentials: true,
+    }).connect()
+  }
+  appSocket?.on('connect', () => {
+    resolve()
   })
-}
+})
 
 /* 
   Certain web browsers treat SameSite: Strict and subdomains as

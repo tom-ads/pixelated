@@ -13,7 +13,7 @@ export const ViewPartyPage = (): JSX.Element => {
 
   const [leaveParty, { isLoading: isLeaving }] = useLeavePartyMutation()
 
-  const { data } = useGetPartyQuery()
+  useGetPartyQuery()
 
   if (!party.isActive) {
     return <Navigate to="/party" replace />
@@ -31,24 +31,14 @@ export const ViewPartyPage = (): JSX.Element => {
         </p>
       </div>
 
-      <div className="grid grid-cols-8 gap-3 grid-rows-2 py-12 sm:grid-rows-1 sm:grid-cols-12 md:gap-5">
+      <div className="grid grid-cols-8 gap-3 grid-rows-2 py-12 sm:grid-rows-1 sm:grid-cols-12 md:gap-5 h-[592px]">
         <div className="col-span-full sm:col-span-5">
           <PartyMembersCard />
         </div>
-        <div className="col-span-full sm:col-start-6 sm:col-span-12 min-h-[400px]">
+        <div className="col-span-full sm:col-start-6 sm:col-span-12">
           <ChatCard />
         </div>
       </div>
-
-      {/* <div className="py-12 grid grid-cols-8 sm:grid-cols-2 md:grid-cols-12 min-h-[500px] grid-rows-1">
-        <div className="col-start-1 col-span-2 md:col-span-4">
-          <PartyMembersCard />
-        </div>
-
-        <div className="col-start-4 col-span-6 md:col-start-6 md:col-span-12">
-          <ChatCard />
-        </div>
-      </div> */}
 
       <div className="flex justify-between gap-4 flex-wrap items-center">
         <Button variant="blank" onClick={() => leaveParty()} loading={isLeaving} danger>

@@ -3,9 +3,10 @@ import SocketEvent from '@/enums/SocketEvent'
 import SocketStatus from '@/enums/SocketStatus'
 import { appendMessage, setMessages } from '@/store/slices/chat'
 import { leaveParty, setParty } from '@/store/slices/party'
+import { Message } from '@/types'
 import Party from '@/types/Models/Party'
 import { BaseQueryApi, FetchBaseQueryError } from '@reduxjs/toolkit/dist/query'
-import appApi, { getSocketConnection } from 'api'
+import appApi, { appSockedConnected, appSocket } from 'api'
 import { CreatePartyRequest, JoinPartyRequest } from './types/requests'
 import { CreatePartyResponse, GetPartyResponse, JoinPartyResponse } from './types/response'
 
@@ -13,10 +14,10 @@ const partyEndpoints = appApi.injectEndpoints({
   endpoints: (build) => ({
     createParty: build.mutation<CreatePartyResponse, CreatePartyRequest>({
       queryFn: async (data: CreatePartyRequest, api: BaseQueryApi) => {
-        const socket = await getSocketConnection()
+        await appSockedConnected
 
         return new Promise((resolve) => {
-          socket.emit(SocketEvent.CREATE_PARTY, data, (response: SocketResponse<Party>) => {
+          appSocket.emit(SocketEvent.CREATE_PARTY, data, (response: SocketResponse<Party>) => {
             if (response.type === SocketStatus.ERROR) {
               resolve({ error: { data: response.result.error } as FetchBaseQueryError })
               return
@@ -31,9 +32,10 @@ const partyEndpoints = appApi.injectEndpoints({
 
     joinParty: build.mutation<JoinPartyResponse, JoinPartyRequest>({
       queryFn: async (data: JoinPartyRequest, api: BaseQueryApi) => {
-        const socket = await getSocketConnection()
+        await appSockedConnected
+
         return new Promise((resolve) => {
-          socket.emit(
+          appSocket.emit(
             SocketEvent.JOIN_PARTY,
             data,
             (response: SocketResponse<JoinPartyResponse>) => {
@@ -53,10 +55,10 @@ const partyEndpoints = appApi.injectEndpoints({
 
     leaveParty: build.mutation<void, void>({
       queryFn: async (_, api: BaseQueryApi) => {
-        const socket = await getSocketConnection()
+        await appSockedConnected
 
         return new Promise((resolve) => {
-          socket.emit(SocketEvent.LEAVE_PARTY, (response: SocketResponse<void>) => {
+          appSocket.emit(SocketEvent.LEAVE_PARTY, (response: SocketResponse<void>) => {
             if (response.type === SocketStatus.ERROR) {
               resolve({ error: { data: response.result.error } as FetchBaseQueryError })
               return
@@ -81,25 +83,38 @@ const partyEndpoints = appApi.injectEndpoints({
           await cacheDataLoaded
 
           // Get or open a web socket connection
-          const socket = await getSocketConnection()
+          await appSockedConnected
 
           // Receive party & cache it
-          socket.on(SocketEvent.USER_JOINED, (response: SocketResponse<GetPartyResponse>) => {
+          appSocket.on(SocketEvent.USER_JOINED, (response: SocketResponse<GetPartyResponse>) => {
             dispatch(setParty(response.result.data.party))
             dispatch(appendMessage(response.result.data.message))
             updateCachedData(() => response.result.data)
           })
 
-          socket.on(SocketEvent.USER_LEFT, (response: SocketResponse<GetPartyResponse>) => {
+          appSocket.on(SocketEvent.USER_LEFT, (response: SocketResponse<GetPartyResponse>) => {
             dispatch(setParty(response.result.data.party))
             dispatch(appendMessage(response.result.data.message))
             updateCachedData(() => response.result.data)
           })
+
+          appSocket.on(
+            SocketEvent.USER_RECONNECTED,
+            (response: SocketResponse<{ party: Party; messages: Message[] }>) => {
+              dispatch(setParty(response.result.data.party))
+              dispatch(setMessages(response.result.data.messages))
+              updateCachedData(() => ({
+                party: response.result.data.party,
+                message: { id: '', sender: '', message: '' },
+              }))
+            },
+          )
 
           // Cleanup
           await cacheEntryRemoved
-          socket.off(SocketEvent.USER_JOINED)
-          socket.off(SocketEvent.USER_LEFT)
+          appSocket.off(SocketEvent.USER_JOINED)
+          appSocket.off(SocketEvent.USER_LEFT)
+          appSocket.off(SocketEvent.USER_RECONNECTED)
         } catch {
           console.log('throwing cache')
         }
