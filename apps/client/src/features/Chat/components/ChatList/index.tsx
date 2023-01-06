@@ -1,9 +1,11 @@
 import { RootState } from '@/store'
-import { useLayoutEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { ChatItem } from '../ChatItem'
 
 export const ChatList = (): JSX.Element => {
+  const [hasScrolled, setHasScrollded] = useState(false)
+
   const scrollRef = useRef<HTMLUListElement | null>(null)
 
   const { messages } = useSelector((state: RootState) => ({
@@ -11,10 +13,10 @@ export const ChatList = (): JSX.Element => {
   }))
 
   useLayoutEffect(() => {
-    if (scrollRef.current) {
+    if (scrollRef.current && !hasScrolled) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }
-  }, [messages, scrollRef.current])
+  }, [messages, scrollRef.current, hasScrolled])
 
   // todo: prevent auto-scrolling if user has scrolled up
 

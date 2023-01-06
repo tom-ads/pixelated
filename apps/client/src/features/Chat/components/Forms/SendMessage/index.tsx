@@ -1,6 +1,7 @@
 import { Button, Form, FormControl, FormInput } from '@/components'
 import { useGetMessagesQuery, useSendMessageMutation } from '@/features/Chat'
 import { RootState } from '@/store'
+import { UseFormReturn } from 'react-hook-form'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
 
@@ -21,8 +22,15 @@ export const SendMessageForm = (): JSX.Element => {
 
   const { isFetching } = useGetMessagesQuery(partyId!, { skip: !partyId })
 
-  const handleSubmit = (data: FormFields) => {
-    console.log(data)
+  const handleSubmit = (data: FormFields, methods: UseFormReturn<FormFields>) => {
+    if (partyId) {
+      sendMessage({
+        partyId,
+        message: methods.getValues('message'),
+      })
+    }
+
+    methods.resetField('message')
   }
 
   return (
@@ -35,7 +43,7 @@ export const SendMessageForm = (): JSX.Element => {
         message: undefined,
       }}
     >
-      {({ register, watch, resetField, getValues, formState: { errors } }) => (
+      {({ register, watch, formState: { errors } }) => (
         <>
           <FormControl>
             <FormInput
@@ -47,15 +55,7 @@ export const SendMessageForm = (): JSX.Element => {
             />
           </FormControl>
           <Button
-            onClick={() => {
-              if (partyId) {
-                sendMessage({
-                  partyId,
-                  message: getValues('message'),
-                })
-                resetField('message')
-              }
-            }}
+            type="submit"
             loading={isFetching}
             disabled={!watch('message')}
             className="shadow-none"
