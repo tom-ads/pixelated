@@ -1,20 +1,36 @@
-import { DependencyList, useLayoutEffect, MutableRefObject, useState, useEffect } from 'react'
+import { DependencyList, useLayoutEffect, MutableRefObject } from 'react'
 
 interface UseAutoScrollOptions {
   deps?: DependencyList
-  scrollable?: boolean
+  offset?: number
+}
+
+interface UseAutoScrollReturn {
+  scrollToBottom: () => void
 }
 
 export function useAutoScroll<T extends HTMLElement | null>(
   ref: MutableRefObject<T>,
-  { deps }: UseAutoScrollOptions,
-) {
+  { deps, offset }: UseAutoScrollOptions,
+): UseAutoScrollReturn {
+  const scrollToBottom = () => {
+    if (ref.current) {
+      ref.current.scrollTop = ref.current.scrollHeight
+    }
+  }
+
   useLayoutEffect(() => {
     if (ref && ref.current) {
-      console.log(ref.current.scrollTop + 600, ref.current.scrollHeight)
-      if (ref.current.scrollTop + 600 >= ref.current.scrollHeight) {
-        ref.current.scrollTop = ref.current.scrollHeight
+      if (!offset) {
+        scrollToBottom()
+        return
+      }
+
+      if (ref.current.scrollTop + offset >= ref.current.scrollHeight) {
+        scrollToBottom()
       }
     }
-  }, [ref?.current, ref?.current?.scrollHeight, ...(deps ?? [])])
+  }, [ref?.current, ref?.current?.scrollHeight, offset, ...(deps ?? [])])
+
+  return { scrollToBottom }
 }

@@ -10,6 +10,13 @@ body {
   @apply min-h-full h-full w-full bg-purple-90 font-chango text-white tracking-wide;
 }
 
+.scrollbar-hide {
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 @layer base {
   .public-wrapper {
     @apply md:max-w-lg md:px-8 mx-auto px-4 w-full min-h-full;

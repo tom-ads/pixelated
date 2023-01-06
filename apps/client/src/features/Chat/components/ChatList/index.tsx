@@ -1,6 +1,7 @@
+import { ChevronIcon } from '@/components/Icons'
 import { useAutoScroll } from '@/hooks/useAutoScroll'
 import { RootState } from '@/store'
-import { ReactNode, useRef } from 'react'
+import { ReactNode, useMemo, useRef } from 'react'
 import { useSelector } from 'react-redux'
 
 type ChatListProps = {
@@ -8,26 +9,31 @@ type ChatListProps = {
 }
 
 export const ChatList = ({ children }: ChatListProps): JSX.Element => {
+  const scrollRef = useRef<HTMLUListElement>(null)
+
   const { messages } = useSelector((state: RootState) => ({
     messages: state.chat.messages,
   }))
 
-  const scrollRef = useRef<HTMLUListElement>(null)
-  useAutoScroll<HTMLUListElement | null>(scrollRef, { deps: [messages] })
-
-  // const handleScroll = (e: UIEvent<HTMLUListElement>) => {
-  //   if (e.currentTarget.scrollTop !== e.currentTarget.scrollHeight && !hasScrolled) {
-  //     setHasScrolled(true)
-  //   }
-
-  //   if (e.currentTarget.scrollTop === e.currentTarget.scrollHeight && hasScrolled) {
-  //     setHasScrolled(false)
-  //   }
-  // }
+  const { scrollToBottom } = useAutoScroll<HTMLUListElement | null>(scrollRef, {
+    deps: [messages],
+    offset: 600,
+  })
 
   return (
-    <ul ref={scrollRef} className="flex flex-col gap-y-4 overflow-y-scroll my-4 max-h-[400px]">
-      {children}
-    </ul>
+    <div className="relative flex flex-col flex-grow">
+      <ul
+        ref={scrollRef}
+        className="flex flex-col gap-y-4 overflow-y-scroll my-4 max-h-[400px] scrollbar-hide"
+      >
+        {children}
+      </ul>
+      {/* <button
+        onClick={scrollToBottom}
+        className="absolute outline-none grid place-content-center bottom-4 left-1/2 -translate-x-[18px] rounded-full w-10 h-10 shadow-md bg-cyan-80"
+      >
+        <ChevronIcon className="text-white w-6" />
+      </button> */}
+    </div>
   )
 }
