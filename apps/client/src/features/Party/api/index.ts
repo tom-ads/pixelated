@@ -1,12 +1,13 @@
 import { SocketResponse } from '@/api/types/SocketResponse'
 import SocketEvent from '@/enums/SocketEvent'
 import SocketStatus from '@/enums/SocketStatus'
+import { appendMessage, setMessages } from '@/store/slices/chat'
 import { leaveParty, setParty } from '@/store/slices/party'
 import Party from '@/types/Models/Party'
 import { BaseQueryApi, FetchBaseQueryError } from '@reduxjs/toolkit/dist/query'
 import appApi, { getSocketConnection } from 'api'
 import { CreatePartyRequest, JoinPartyRequest } from './types/requests'
-import { CreatePartyResponse, JoinPartyResponse } from './types/response'
+import { CreatePartyResponse, GetPartyResponse, JoinPartyResponse } from './types/response'
 
 const partyEndpoints = appApi.injectEndpoints({
   endpoints: (build) => ({
@@ -32,15 +33,20 @@ const partyEndpoints = appApi.injectEndpoints({
       queryFn: async (data: JoinPartyRequest, api: BaseQueryApi) => {
         const socket = await getSocketConnection()
         return new Promise((resolve) => {
-          socket.emit(SocketEvent.JOIN_PARTY, data, (response: SocketResponse<Party>) => {
-            if (response.type === SocketStatus.ERROR) {
-              resolve({ error: { data: response.result.error } as FetchBaseQueryError })
-              return
-            }
+          socket.emit(
+            SocketEvent.JOIN_PARTY,
+            data,
+            (response: SocketResponse<JoinPartyResponse>) => {
+              if (response.type === SocketStatus.ERROR) {
+                resolve({ error: { data: response.result.error } as FetchBaseQueryError })
+                return
+              }
 
-            api.dispatch(setParty(response.result.data))
-            resolve({ data: response.result.data })
-          })
+              api.dispatch(setParty(response.result.data.party))
+              api.dispatch(setMessages(response.result.data.messages))
+              resolve({ data: response.result.data })
+            },
+          )
         })
       },
     }),
@@ -63,9 +69,9 @@ const partyEndpoints = appApi.injectEndpoints({
       },
     }),
 
-    getParty: build.query<{ party: Party; message: string }, void>({
+    getParty: build.query<GetPartyResponse, void>({
       // Set default query function, will ignore baseQuery
-      queryFn: () => ({ data: { party: { name: '', code: '', members: [] }, message: '' } }),
+      queryFn: () => ({ data: {} as GetPartyResponse }),
       // Handle WS for parties and caching to store
       async onCacheEntryAdded(
         _,
@@ -78,21 +84,17 @@ const partyEndpoints = appApi.injectEndpoints({
           const socket = await getSocketConnection()
 
           // Receive party & cache it
-          socket.on(
-            SocketEvent.USER_JOINED,
-            (response: SocketResponse<{ party: Party; message: string }>) => {
-              dispatch(setParty(response.result.data.party))
-              updateCachedData(() => response.result.data)
-            },
-          )
+          socket.on(SocketEvent.USER_JOINED, (response: SocketResponse<GetPartyResponse>) => {
+            dispatch(setParty(response.result.data.party))
+            dispatch(appendMessage(response.result.data.message))
+            updateCachedData(() => response.result.data)
+          })
 
-          socket.on(
-            SocketEvent.USER_LEFT,
-            (response: SocketResponse<{ party: Party; message: string }>) => {
-              dispatch(setParty(response.result.data.party))
-              updateCachedData(() => response.result.data)
-            },
-          )
+          socket.on(SocketEvent.USER_LEFT, (response: SocketResponse<GetPartyResponse>) => {
+            dispatch(setParty(response.result.data.party))
+            dispatch(appendMessage(response.result.data.message))
+            updateCachedData(() => response.result.data)
+          })
 
           // Cleanup
           await cacheEntryRemoved

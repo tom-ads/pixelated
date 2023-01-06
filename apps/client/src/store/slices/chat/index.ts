@@ -14,11 +14,15 @@ const partySlice = createSlice({
   name: 'chat',
   initialState,
   reducers: {
+    setMessages: (currentState, action: PayloadAction<Message[]>) => {
+      currentState.messages = action.payload
+    },
+
     appendMessage: (currentState, action: PayloadAction<Message>) => {
       currentState.messages = [...currentState.messages, action.payload]
     },
   },
 })
 
-export const { appendMessage } = partySlice.actions
+export const { setMessages, appendMessage } = partySlice.actions
 export default partySlice.reducer

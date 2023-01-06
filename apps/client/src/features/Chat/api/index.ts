@@ -58,7 +58,6 @@ const chatEndpoints = appApi.injectEndpoints({
           // })
 
           socket.on(SocketEvent.RECEIVE_MESSAGE, (response: SocketResponse<Message>) => {
-            console.log('received...')
             dispatch(appendMessage(response.result.data))
             updateCachedData((draft) => [...draft, response.result.data])
           })

@@ -3,12 +3,20 @@ import { socketResponse } from "../../helpers";
 import SocketError from "../Enum/SocketError";
 import SocketEvent from "../Enum/SocketEvent";
 import SocketStatus from "../Enum/SocketStatus";
+import { ChatServiceContract } from "../Service/ChatService";
 import { PartyServiceContract } from "../Service/PartyService";
 import { CreatePartyDto } from "../Service/PartyService/dto";
 import JoinPartyDto from "../Service/PartyService/dto/JoinParty";
+import Message, { MessageDocument, SerializedMessage } from "../Model/Message";
+import { SerializedParty } from "../Model/Party";
+import { randomUUID } from "crypto";
+import { MessageType } from "../Enum/MessageType";
 
 export class PartyChannel {
-  constructor(private readonly partyService: PartyServiceContract) {}
+  constructor(
+    private readonly partyService: PartyServiceContract,
+    private readonly chatService: ChatServiceContract
+  ) {}
 
   public async createParty(
     socket: Socket,
@@ -98,28 +106,47 @@ export class PartyChannel {
 
       // Socket joins party
       socket.join(party.id);
+      console.log(
+        `[Party] ${session.user.username} has joined the party ${party.name}:${party.id}`
+      );
+
+      // Create system message
+      const systemMessage = await this.chatService.createMessage({
+        partyId: party.id,
+        sender: MessageType.SYSTEM_MESSAGE,
+        message: `${session.user.username} has joined the party!`,
+      });
+
+      // Get party messages
+      const partyMessages = await this.chatService.getMessages({
+        partyId: updatedParty?.id,
+        sortBy: "asc",
+      });
+
+      // Send socket party and previous messages
       callback(
         socketResponse(SocketStatus.SUCCESS, {
-          data: updatedParty?.serialize(),
+          data: {
+            party: updatedParty?.serialize(),
+            messages: partyMessages.map((message) => message.serialize()),
+          },
         })
       );
 
-      // Broadcast to party members that a user joined
+      // Broadcast to other party members that someone joined
       socket.broadcast.to(party.id).emit(
         SocketEvent.USER_JOINED,
         socketResponse(SocketStatus.SUCCESS, {
           data: {
             party: updatedParty?.serialize(),
-            message: `${session.user.username} joined the party`,
+            message: systemMessage.serialize(),
           },
         })
       );
-
-      console.log(
-        `[Party] ${session.user.username} has joined the party ${party.name}:${party.id}`
-      );
     } catch (error) {
-      console.log(`[Party] Failed to join party, due to: ${error}`);
+      console.log(
+        `[Party] Error occured while joining party, due to: ${error}`
+      );
       callback(
         socketResponse(SocketStatus.ERROR, {
           error: {
@@ -159,7 +186,6 @@ export class PartyChannel {
       return callback(socketResponse(SocketStatus.SUCCESS, {}));
     }
 
-    // Remove user from party
     try {
       // Remove party member from party document
       const updatedParty = await this.partyService.removePartyMember({
@@ -175,13 +201,20 @@ export class PartyChannel {
         })
       );
 
+      // Create system message
+      const systemMessage = await this.chatService.createMessage({
+        partyId: existingParty.id,
+        sender: MessageType.SYSTEM_MESSAGE,
+        message: `${session.user.username} has left the party!`,
+      });
+
       // Broadcast to party that the party member has left
       socket.broadcast.to(existingParty.id).emit(
         SocketEvent.USER_LEFT,
         socketResponse(SocketStatus.SUCCESS, {
           data: {
             party: updatedParty?.serialize(),
-            message: `${session.user.username} has left the party`,
+            message: systemMessage.serialize(),
           },
         })
       );

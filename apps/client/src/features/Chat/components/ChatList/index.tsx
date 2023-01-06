@@ -1,7 +1,6 @@
-import { ChevronIcon } from '@/components/Icons'
 import { useAutoScroll } from '@/hooks/useAutoScroll'
 import { RootState } from '@/store'
-import { ReactNode, useMemo, useRef } from 'react'
+import { ReactNode, useEffect, useRef } from 'react'
 import { useSelector } from 'react-redux'
 
 type ChatListProps = {
@@ -19,6 +18,10 @@ export const ChatList = ({ children }: ChatListProps): JSX.Element => {
     deps: [messages],
     offset: 600,
   })
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [])
 
   return (
     <div className="relative flex flex-col flex-grow">
