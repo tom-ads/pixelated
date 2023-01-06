@@ -12,7 +12,9 @@ export interface IParty {
   members: PartyMember[];
 }
 
-export interface SerializedParty extends IParty {}
+export interface SerializedParty extends IParty {
+  id: string;
+}
 
 export interface PartyInstanceMethods {
   serialize(): SerializedParty;
@@ -38,6 +40,7 @@ export const PartySchema = new Schema<IParty, PartyModel, PartyInstanceMethods>(
 PartySchema.methods = {
   serialize() {
     return {
+      id: this.id,
       name: this.name,
       code: this.code,
       members: this.members,

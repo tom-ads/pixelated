@@ -1,4 +1,5 @@
 import { cva, VariantProps } from 'class-variance-authority'
+import classNames from 'classnames'
 import { InputHTMLAttributes } from 'react'
 
 export const input = cva(
@@ -36,6 +37,7 @@ export const FormInput = ({
   placeHolder,
   size,
   error,
+  className,
   register,
 }: FormInputProps): JSX.Element => {
   return (
@@ -43,7 +45,7 @@ export const FormInput = ({
       id={name}
       type="text"
       placeholder={placeHolder}
-      className={input({ size, error })}
+      className={classNames(input({ size, error }), className)}
       {...register(name)}
     />
   )

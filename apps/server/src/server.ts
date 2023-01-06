@@ -16,16 +16,16 @@ import MongoManager from "./database/manager";
 import session from "express-session";
 import CorsConfig from "./config/cors";
 import http from "http";
-import PartyService, { PartyServiceContract } from "./api/Service/PartyService";
+import PartyService from "./api/Service/PartyService";
 import { PartyDocument } from "./api/Model/Party";
 import { CreatePartyDto } from "./api/Service/PartyService/dto";
 import SocketEvent from "./api/Enum/SocketEvent";
-import { socketResponse } from "./helpers";
-import SocketStatus from "./api/Enum/SocketStatus";
 import JoinPartyDto from "./api/Service/PartyService/dto/JoinParty";
-import SocketError from "./api/Enum/SocketError";
 import { UserDocument } from "./api/Model/User";
 import { PartyChannel } from "./api/Channels/PartyChannel";
+import { SendMessageDto } from "./api/Service/ChatService/dto";
+import { ChatChannel } from "./api/Channels/ChatChannel";
+import { ChatService } from "./api/Service/ChatService";
 
 // Create server
 export const app: Express = express();
@@ -52,6 +52,7 @@ export const container = createContainer({
   userService: asClass(UserService).scoped(),
   sessionService: asClass(SessionService).scoped(),
   partyService: asClass(PartyService).scoped(),
+  chatService: asClass(ChatService).scoped(),
 
   // Configs
   connectionString: asValue(process.env.MONGO_CONNECTION_URL),
@@ -61,6 +62,7 @@ export const container = createContainer({
 
   // Channels
   partyChannel: asClass(PartyChannel).scoped(),
+  chatChannel: asClass(ChatChannel).scoped(),
 });
 
 (async function () {
@@ -127,6 +129,15 @@ io.on("connection", async function (socket: Socket) {
   socket.on(SocketEvent.JOIN_PARTY, async (data: JoinPartyDto, callback) => {
     await container.resolve("partyChannel").joinParty(socket, data, callback);
   });
+
+  socket.on(
+    SocketEvent.SEND_MESSAGE,
+    async (data: SendMessageDto, callback) => {
+      await container
+        .resolve("chatChannel")
+        .sendMessage(socket, data, callback);
+    }
+  );
 
   socket.on("error", (error) => {
     if (error && error.message === "Unauthorized") {

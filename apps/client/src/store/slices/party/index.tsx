@@ -7,6 +7,7 @@ interface PartyState extends Partial<Party> {
 }
 
 const initialState: PartyState = {
+  id: undefined,
   name: undefined,
   code: undefined,
   members: [],
@@ -18,6 +19,7 @@ const partySlice = createSlice({
   initialState,
   reducers: {
     setParty: (currentState, action: PayloadAction<Party>) => {
+      currentState.id = action.payload.id
       currentState.name = action.payload.name
       currentState.code = action.payload.code
       currentState.members = action.payload.members
@@ -26,6 +28,7 @@ const partySlice = createSlice({
     },
 
     leaveParty: (currentState) => {
+      currentState.id = undefined
       currentState.name = undefined
       currentState.code = undefined
       currentState.members = []

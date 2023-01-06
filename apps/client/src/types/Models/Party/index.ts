@@ -5,6 +5,7 @@ export type PartyMember = {
 }
 
 type Party = {
+  id: string
   name: string
   code: string
   members: PartyMember[]

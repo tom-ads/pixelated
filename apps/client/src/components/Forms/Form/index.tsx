@@ -22,7 +22,7 @@ export type FormChangeCallback<TFormValues extends FieldValues> = (
 
 export type FormProps<TFormValues extends FieldValues, ValidationSchema extends ZodType> = {
   onChange?: (fields: TFormValues, methods: UseFormReturn<TFormValues>) => void
-  onSubmit: SubmitHandler<TFormValues>
+  onSubmit?: SubmitHandler<TFormValues>
   className?: string
   validationSchema?: ValidationSchema
   children: (methods: UseFormReturn<TFormValues>) => ReactNode

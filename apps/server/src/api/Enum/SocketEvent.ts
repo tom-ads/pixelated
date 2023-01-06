@@ -4,6 +4,8 @@ export enum SocketEvent {
   LEAVE_PARTY = "LEAVE_PARTY",
   USER_JOINED = "USER_JOINED",
   USER_LEFT = "USER_LEFT",
+  SEND_MESSAGE = "SEND_MESSAGE",
+  RECEIVE_MESSAGE = "RECEIVE_MESSAGE",
 }
 
 export default SocketEvent;

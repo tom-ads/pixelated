@@ -4,11 +4,13 @@ import appApi from 'api'
 import AuthReducer from './slices/auth'
 import GameReducer from './slices/game'
 import PartyReducer from './slices/party'
+import ChatReducer from './slices/chat'
 
 const appReducers = {
   auth: AuthReducer,
   game: GameReducer,
   party: PartyReducer,
+  chat: ChatReducer,
 }
 
 export const store = configureStore({
