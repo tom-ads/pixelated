@@ -17,7 +17,6 @@ import session from "express-session";
 import CorsConfig from "./config/cors";
 import http from "http";
 import PartyService from "./api/Service/PartyService";
-import { PartyDocument } from "./api/Model/Party";
 import { CreatePartyDto } from "./api/Service/PartyService/dto";
 import SocketEvent from "./api/Enum/SocketEvent";
 import JoinPartyDto from "./api/Service/PartyService/dto/JoinParty";
@@ -26,11 +25,14 @@ import { PartyChannel } from "./api/Channels/PartyChannel";
 import { SendMessageDto } from "./api/Service/ChatService/dto";
 import { ChatChannel } from "./api/Channels/ChatChannel";
 import { ChatService } from "./api/Service/ChatService";
+import { StartGameDto } from "./api/Service/GameService/dto";
+import GameService from "./api/Service/GameService";
+import { GameChannel } from "./api/Channels/GameChannel";
 
 // Create server
 export const app: Express = express();
 const server = http.createServer(app);
-const io = new Server(server, {
+export const io = new Server(server, {
   cors: {
     origin: "http://localhost:3000",
     credentials: true,
@@ -53,6 +55,7 @@ export const container = createContainer({
   sessionService: asClass(SessionService).scoped(),
   partyService: asClass(PartyService).scoped(),
   chatService: asClass(ChatService).scoped(),
+  gameService: asClass(GameService).scoped(),
 
   // Configs
   connectionString: asValue(process.env.MONGO_CONNECTION_URL),
@@ -63,6 +66,9 @@ export const container = createContainer({
   // Channels
   partyChannel: asClass(PartyChannel).scoped(),
   chatChannel: asClass(ChatChannel).scoped(),
+  gameChannel: asClass(GameChannel).scoped(),
+
+  io: asValue(io),
 });
 
 (async function () {
@@ -70,9 +76,6 @@ export const container = createContainer({
 })();
 
 import { sessionConfig } from "./config/session";
-import { MessageDocument } from "./api/Model/Message";
-import { socketResponse } from "./helpers";
-import SocketStatus from "./api/Enum/SocketStatus";
 const sessionMiddleware = session(sessionConfig);
 app.use(sessionMiddleware);
 
@@ -108,34 +111,7 @@ io.use(async (socket, next) => {
 });
 
 io.on("connection", async function (socket: Socket) {
-  const party: PartyDocument = await container
-    .resolve("partyService")
-    .findByUsername(socket.request.session?.user?.username);
-
-  if (party) {
-    socket.join(party.id);
-
-    const previousMessages: MessageDocument[] = await container
-      .resolve("chatService")
-      .getMessages({ partyId: party.id, sortBy: "asc" });
-
-    /* 
-      We need to give the client time to initialise the getParty events
-      before we can emit the USER_RECONNECTED event, else it won't be
-      processed by the client in time.
-    */
-    setTimeout(() => {
-      socket.emit(
-        SocketEvent.USER_RECONNECTED,
-        socketResponse(SocketStatus.SUCCESS, {
-          data: {
-            party: party.serialize(),
-            messages: previousMessages?.map((message) => message.serialize()),
-          },
-        })
-      );
-    }, 200);
-  }
+  await container.resolve("partyChannel").partyReconnect(socket);
 
   socket.on(
     SocketEvent.CREATE_PARTY,
@@ -162,6 +138,10 @@ io.on("connection", async function (socket: Socket) {
         .sendMessage(socket, data, callback);
     }
   );
+
+  socket.on(SocketEvent.START_GAME, async (data: StartGameDto, callback) => {
+    await container.resolve("gameChannel").startGame(socket, data, callback);
+  });
 
   socket.on("error", (error) => {
     if (error && error.message === "Unauthorized") {

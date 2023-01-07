@@ -4,6 +4,7 @@ import { CreateMessageDto, GetMessagesDto } from "./dto";
 export interface ChatServiceContract {
   createMessage(dto: CreateMessageDto): Promise<MessageDocument>;
   getMessages(dto: GetMessagesDto): Promise<MessageDocument[]>;
+  clearMessages(partyId: string): Promise<void>;
 }
 
 export class ChatService implements ChatServiceContract {
@@ -15,5 +16,9 @@ export class ChatService implements ChatServiceContract {
     return await Message.find({ partyId: dto.partyId }, {}).sort({
       createdAt: dto.sortBy,
     });
+  }
+
+  public async clearMessages(partyId: string): Promise<void> {
+    await Message.deleteMany({ partyId }).exec();
   }
 }

@@ -1,4 +1,5 @@
 import { AuthLayout } from '@/components'
+import { GameRoutes } from '@/features/Game'
 import { PartyRoutes } from '@/features/Party'
 import { ProfileRoutes } from '@/features/Profile'
 import { RootState } from '@/store'
@@ -30,6 +31,10 @@ export const privateRoutes = [
       {
         path: '/party/*',
         element: <PartyRoutes />,
+      },
+      {
+        path: '/game/*',
+        element: <GameRoutes />,
       },
     ],
   },

@@ -7,10 +7,8 @@ import { ChatServiceContract } from "../Service/ChatService";
 import { PartyServiceContract } from "../Service/PartyService";
 import { CreatePartyDto } from "../Service/PartyService/dto";
 import JoinPartyDto from "../Service/PartyService/dto/JoinParty";
-import Message, { MessageDocument, SerializedMessage } from "../Model/Message";
-import { SerializedParty } from "../Model/Party";
-import { randomUUID } from "crypto";
 import { MessageType } from "../Enum/MessageType";
+import { io } from "../../server";
 
 export class PartyChannel {
   constructor(
@@ -29,6 +27,7 @@ export class PartyChannel {
       const createdParty = await this.partyService.createParty({
         name: data.name,
         ownerUsername: session.user.username,
+        socketId: socket.id,
       });
 
       socket.join(createdParty.id);
@@ -58,7 +57,6 @@ export class PartyChannel {
 
     // Check party exists
     const party = await this.partyService.findByCode(data.code);
-    console.log(party);
     if (!party) {
       return callback(
         socketResponse(SocketStatus.ERROR, {
@@ -90,7 +88,7 @@ export class PartyChannel {
       return callback(
         socketResponse(SocketStatus.ERROR, {
           error: {
-            type: SocketError.MEMBER_LIMIT,
+            type: SocketError.MEMBER_MAX_LIMIT,
             message: "Party is full",
           },
         })
@@ -103,6 +101,7 @@ export class PartyChannel {
         partyId: party.id,
         username: session.user.username,
         isOwner: false,
+        socketId: socket.id,
       });
 
       // Socket joins party
@@ -224,5 +223,47 @@ export class PartyChannel {
         `[Party] ${session.user.username} has left the party ${existingParty.name}:${existingParty.id}`
       );
     } catch (error) {}
+  }
+
+  public async partyReconnect(socket: Socket) {
+    const session = socket.request.session;
+    const party = await this.partyService.findByUsername(
+      session?.user?.username
+    );
+
+    if (party) {
+      socket.join(party.id);
+
+      // Get party messages
+      const previousMessages = await this.chatService.getMessages({
+        partyId: party.id,
+        sortBy: "asc",
+      });
+
+      // Set socketId to party member
+
+      await this.partyService.updatePartyMember({
+        partyId: party.id,
+        username: session.user.username,
+        query: { socketId: socket.id },
+      });
+
+      /* 
+        We need to give the client time to initialise the getParty events
+        before we can emit the USER_RECONNECTED event, else it won't be
+        processed by the client in time.
+      */
+      setTimeout(() => {
+        socket.emit(
+          SocketEvent.USER_RECONNECTED,
+          socketResponse(SocketStatus.SUCCESS, {
+            data: {
+              party: party.serialize(),
+              messages: previousMessages?.map((message) => message.serialize()),
+            },
+          })
+        );
+      }, 200);
+    }
   }
 }

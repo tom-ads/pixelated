@@ -1,7 +1,7 @@
 import { SocketResponse } from '@/api/types/SocketResponse'
 import SocketEvent from '@/enums/SocketEvent'
 import SocketStatus from '@/enums/SocketStatus'
-import { appendMessage, setMessages } from '@/store/slices/chat'
+import { appendMessage, clearMessages, setMessages } from '@/store/slices/chat'
 import { leaveParty, setParty } from '@/store/slices/party'
 import { Message } from '@/types'
 import Party from '@/types/Models/Party'
@@ -110,11 +110,17 @@ const partyEndpoints = appApi.injectEndpoints({
             },
           )
 
+          appSocket.on(SocketEvent.START_GAME, (response: SocketResponse<{ party: Party }>) => {
+            dispatch(setParty(response.result.data.party))
+            dispatch(clearMessages())
+          })
+
           // Cleanup
           await cacheEntryRemoved
           appSocket.off(SocketEvent.USER_JOINED)
           appSocket.off(SocketEvent.USER_LEFT)
           appSocket.off(SocketEvent.USER_RECONNECTED)
+          appSocket.off(SocketEvent.START_GAME)
         } catch {
           console.log('throwing cache')
         }

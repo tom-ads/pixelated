@@ -7,6 +7,7 @@ export enum SocketEvent {
   USER_RECONNECTED = 'USER_RECONNECTED',
   SEND_MESSAGE = 'SEND_MESSAGE',
   RECEIVE_MESSAGE = 'RECEIVE_MESSAGE',
+  START_GAME = 'START_GAME',
 }
 
 export default SocketEvent

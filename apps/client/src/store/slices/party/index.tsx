@@ -22,6 +22,9 @@ const partySlice = createSlice({
       currentState.id = action.payload.id
       currentState.name = action.payload.name
       currentState.code = action.payload.code
+      currentState.isPlaying = action.payload.isPlaying
+      currentState.round = action.payload.round
+      currentState.turnWord = action.payload.turnWord
       currentState.members = action.payload.members
 
       currentState.isActive = true
@@ -31,6 +34,7 @@ const partySlice = createSlice({
       currentState.id = undefined
       currentState.name = undefined
       currentState.code = undefined
+      currentState.isPlaying = false
       currentState.members = []
 
       currentState.isActive = false

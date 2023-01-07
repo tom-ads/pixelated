@@ -1,5 +1,6 @@
 import { Button } from '@/components'
 import { ChatCard } from '@/features/Chat'
+import { useStartGameMutation } from '@/features/Game'
 import { useGetPartyQuery, useLeavePartyMutation } from '@/features/Party'
 import { RootState } from '@/store'
 import { useSelector } from 'react-redux'
@@ -13,10 +14,22 @@ export const ViewPartyPage = (): JSX.Element => {
 
   const [leaveParty, { isLoading: isLeaving }] = useLeavePartyMutation()
 
+  const [startGame, { isLoading: isStarting }] = useStartGameMutation()
+
   useGetPartyQuery()
+
+  const handleStartGame = () => {
+    if (party.id) {
+      startGame(party.id)
+    }
+  }
 
   if (!party.isActive) {
     return <Navigate to="/party" replace />
+  }
+
+  if (party.isPlaying) {
+    return <Navigate to="/game" />
   }
 
   return (
@@ -44,7 +57,9 @@ export const ViewPartyPage = (): JSX.Element => {
         <Button variant="blank" onClick={() => leaveParty()} loading={isLeaving} danger>
           Leave Party
         </Button>
-        <Button disabled={isLeaving}>Start Game</Button>
+        <Button disabled={isLeaving || isStarting} onClick={handleStartGame}>
+          Start Game
+        </Button>
       </div>
     </div>
   )

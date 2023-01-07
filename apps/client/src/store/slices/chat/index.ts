@@ -21,8 +21,12 @@ const partySlice = createSlice({
     appendMessage: (currentState, action: PayloadAction<Message>) => {
       currentState.messages = [...currentState.messages, action.payload]
     },
+
+    clearMessages: (currentState) => {
+      currentState.messages = []
+    },
   },
 })
 
-export const { setMessages, appendMessage } = partySlice.actions
+export const { setMessages, appendMessage, clearMessages } = partySlice.actions
 export default partySlice.reducer

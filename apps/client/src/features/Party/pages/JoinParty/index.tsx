@@ -47,16 +47,10 @@ export const JoinPartyPage = (): JSX.Element => {
             </FormErrorMessage>
           </FormControl>
           <div className="mt-12 w-full gap-4 px-6 justify-center sm:gap-20 flex flex-wrap sm:flex-nowrap sm:items-center">
-            <Button
-              onClick={() => navigate('/party')}
-              variant="blank"
-              className="w-min"
-              loading={joiningParty}
-              block
-            >
+            <Button onClick={() => navigate('/party')} variant="blank" className="w-min">
               Back
             </Button>
-            <Button type="submit" block>
+            <Button type="submit" loading={joiningParty} block>
               Join
             </Button>
           </div>
