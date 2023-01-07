@@ -1,11 +1,10 @@
 import { Button } from '@/components'
-import { ChatCard } from '@/features/Chat'
 import { useStartGameMutation } from '@/features/Game'
-import { useGetPartyQuery, useLeavePartyMutation } from '@/features/Party'
+import { useGetPartyQuery, useLeavePartyMutation } from '../../api'
 import { RootState } from '@/store'
 import { useSelector } from 'react-redux'
 import { Navigate } from 'react-router-dom'
-import { PartyMembersCard } from '../../components/Cards'
+import { ChatCard, MembersCard } from '../../components/Cards'
 
 export const ViewPartyPage = (): JSX.Element => {
   const { party } = useSelector((state: RootState) => ({
@@ -44,11 +43,11 @@ export const ViewPartyPage = (): JSX.Element => {
         </p>
       </div>
 
-      <div className="grid grid-cols-8 gap-3 grid-rows-2 py-12 sm:grid-rows-1 sm:grid-cols-12 md:gap-5 h-[592px]">
-        <div className="col-span-full sm:col-span-5">
-          <PartyMembersCard />
+      <div className="grid grid-cols-8 gap-3 grid-rows-2 py-12 sm:grid-rows-1 sm:grid-cols-12 md:gap-5 h-[800px] sm:h-[592px] flex-grow">
+        <div className="col-span-full sm:col-span-4">
+          <MembersCard />
         </div>
-        <div className="col-span-full sm:col-start-6 sm:col-span-12">
+        <div className="col-span-full sm:col-start-5 sm:col-span-8 flex">
           <ChatCard />
         </div>
       </div>

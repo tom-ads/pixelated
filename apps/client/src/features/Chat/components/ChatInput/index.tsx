@@ -1,6 +1,7 @@
 import { Button, Form, FormControl, FormInput } from '@/components'
 import { useGetMessagesQuery, useSendMessageMutation } from '@/features/Chat'
 import { RootState } from '@/store'
+import classNames from 'classnames'
 import { UseFormReturn } from 'react-hook-form'
 import { useSelector } from 'react-redux'
 import { z } from 'zod'
@@ -13,7 +14,17 @@ const ValidationSchema = z.object({
   message: z.string().min(1, { message: 'Message is required' }),
 })
 
-export const SendMessageForm = (): JSX.Element => {
+type ChatInputProps = {
+  block?: boolean
+  size?: 'sm' | 'md' | 'lg' | 'xl'
+  className?: string
+}
+
+export const ChatInput = ({
+  className,
+  size = 'md',
+  block = false,
+}: ChatInputProps): JSX.Element => {
   const [sendMessage] = useSendMessageMutation()
 
   const { partyId } = useSelector((state: RootState) => ({
@@ -36,7 +47,7 @@ export const SendMessageForm = (): JSX.Element => {
   return (
     <Form<FormFields, typeof ValidationSchema>
       mode="onSubmit"
-      className="flex !flex-row gap-4"
+      className={classNames('gap-4 mt-3', className)}
       onSubmit={handleSubmit}
       validationSchema={ValidationSchema}
       defaultValues={{
@@ -47,6 +58,7 @@ export const SendMessageForm = (): JSX.Element => {
         <>
           <FormControl>
             <FormInput
+              size={size}
               name="message"
               placeHolder="Write a message..."
               register={register}
@@ -55,7 +67,9 @@ export const SendMessageForm = (): JSX.Element => {
             />
           </FormControl>
           <Button
+            block={block}
             type="submit"
+            size={size}
             loading={isFetching}
             disabled={!watch('message')}
             className="shadow-none"

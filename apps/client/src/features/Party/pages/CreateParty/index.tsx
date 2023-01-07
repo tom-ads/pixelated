@@ -1,6 +1,6 @@
 import { Button, Form, FormControl, FormInput } from '@/components'
 import FormErrorMessage from '@/components/Forms/ErrorMessage'
-import { useCreatePartyMutation } from '@/features/Party'
+import { useCreatePartyMutation } from '../../api'
 import { RootState } from '@/store'
 import { useSelector } from 'react-redux'
 import { Navigate, useNavigate } from 'react-router-dom'

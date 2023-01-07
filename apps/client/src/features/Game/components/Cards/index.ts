@@ -1,2 +1,3 @@
-export * from './GameBoard'
-export * from './GameLeaderboard'
+export * from './Canvas'
+export * from './Leaderboard'
+export * from './Chat'

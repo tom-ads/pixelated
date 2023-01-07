@@ -3,7 +3,7 @@ import { RootState } from '@/store'
 import { useSelector } from 'react-redux'
 import { PlayerStatusList } from '../../Lists/PlayerStatusList'
 
-export const PartyMembersCard = () => {
+export const MembersCard = () => {
   const { members } = useSelector((state: RootState) => ({
     members: state.party.members,
   }))

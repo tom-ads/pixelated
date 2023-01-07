@@ -44,6 +44,9 @@ module.exports = {
         60: '#9C9C9C',
         30: '#DBDBDB',
       },
+      brown: {
+        70: '#925D0E',
+      },
     },
     boxShadow: {
       sm: '0px 0px 5px 0px rgb(0, 0, 0)',

@@ -1,6 +1,8 @@
 export type PartyMember = {
   username: string
   score: number
+  rounds: number
+  isDrawer: boolean
   isOwner: boolean
 }
 

@@ -3,6 +3,7 @@ import { Message } from '@/types/Models/Message'
 import classNames from 'classnames'
 
 type ChatItemProps = {
+  size?: 'sm' | 'md'
   value: Message
 }
 
@@ -10,12 +11,21 @@ type ChatItemProps = {
   Use whitespace-pre-wrap to preserve newlines and spaces in message, while the
   parent is flex'd w/ word break to wrap down onto the next line within the container
 */
-export const ChatItem = ({ value }: ChatItemProps): JSX.Element => {
+export const ChatItem = ({ size = 'md', value }: ChatItemProps): JSX.Element => {
   const isSystemMessage = value.sender === MessageType.SYSTEM_MESSAGE
 
   return (
     <li className="space-y-[6px]">
-      {!isSystemMessage && <p className="text-base">{value.sender}</p>}
+      {!isSystemMessage && (
+        <p
+          className={classNames({
+            'text-sm': size === 'sm',
+            'text-base': size === 'md',
+          })}
+        >
+          {value.sender}
+        </p>
+      )}
       <div className="flex break-words">
         <div
           className={classNames(

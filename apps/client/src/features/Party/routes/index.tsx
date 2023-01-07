@@ -1,11 +1,6 @@
-import {
-  CreatePartyPage,
-  JoinPartyPage,
-  PartyOptionPage,
-  PartyWrapper,
-  ViewPartyPage,
-} from '@/features/Party'
+import { CreatePartyPage, JoinPartyPage, PartyOptionPage, ViewPartyPage } from '../pages'
 import { Route, Routes } from 'react-router-dom'
+import { PartyWrapper } from '../components'
 
 export const PartyRoutes = (): JSX.Element => {
   return (
