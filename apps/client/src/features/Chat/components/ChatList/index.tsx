@@ -5,11 +5,12 @@ import { ReactNode, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 
 type ChatListProps = {
+  offset?: number
   className?: string
   children: ReactNode
 }
 
-export const ChatList = ({ className, children }: ChatListProps): JSX.Element => {
+export const ChatList = ({ className, offset = 600, children }: ChatListProps): JSX.Element => {
   const [initialScroll, setInitialScroll] = useState(false)
 
   const scrollRef = useRef<HTMLUListElement>(null)
@@ -20,7 +21,7 @@ export const ChatList = ({ className, children }: ChatListProps): JSX.Element =>
 
   const { scrollToBottom } = useAutoScroll<HTMLUListElement | null>(scrollRef, {
     deps: [messages],
-    offset: messages?.length ? 600 : 0,
+    offset: messages?.length ? offset : 0,
   })
 
   useEffect(() => {

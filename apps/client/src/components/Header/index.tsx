@@ -9,7 +9,8 @@ export const Header = (): JSX.Element => {
       <InlineLink to="/profile" variant="blank">
         (P)ixelated
       </InlineLink>
-      {!location.pathname.includes('party') && <InlineLink to="/party">Play!</InlineLink>}
+      {!location.pathname.includes('party') ||
+        (!location.pathname.includes('game') && <InlineLink to="/party">Play!</InlineLink>)}
     </div>
   )
 }

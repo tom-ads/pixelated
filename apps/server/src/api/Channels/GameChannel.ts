@@ -37,16 +37,16 @@ export class GameChannel {
       );
     }
 
-    if (party.members.length < 2) {
-      return callback(
-        socketResponse(SocketStatus.ERROR, {
-          error: {
-            type: SocketError.MEMBER_MIN_LIMIT,
-            message: "Party must have atleast 2 members to start game!",
-          },
-        })
-      );
-    }
+    // if (party.members.length < 2) {
+    //   return callback(
+    //     socketResponse(SocketStatus.ERROR, {
+    //       error: {
+    //         type: SocketError.MEMBER_MIN_LIMIT,
+    //         message: "Party must have atleast 2 members to start game!",
+    //       },
+    //     })
+    //   );
+    // }
 
     try {
       // Setup initial round & turn
