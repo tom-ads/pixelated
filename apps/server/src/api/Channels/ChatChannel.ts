@@ -7,7 +7,6 @@ import SocketStatus from "../Enum/SocketStatus";
 import { ChatServiceContract } from "../Service/ChatService";
 import { SendMessageDto } from "../Service/ChatService/dto";
 import { GameServiceContract } from "../Service/GameService";
-import { PartyServiceContract } from "../Service/PartyService";
 
 export class ChatChannel {
   constructor(

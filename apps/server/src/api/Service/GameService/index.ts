@@ -60,8 +60,7 @@ class GameService implements GameServiceContract {
     const guesser = party.members.find(
       (member) => member.username === dto.guesser
     );
-    console.log("guess position", guesser?.guessedPos);
-    console.log(!guesser, guesser?.guessedPos, guesser?.isDrawer);
+
     // prevent guesser from guessing again
     if (!guesser || guesser?.guessedPos || guesser?.isDrawer) {
       return false;
