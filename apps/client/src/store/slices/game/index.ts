@@ -1,4 +1,5 @@
 import { TimerType } from '@/enums/TimerType'
+import { CanvasControls } from '@/features/Game'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 export type TimerState = {
@@ -15,6 +16,7 @@ interface GameState {
   guessed: false
   turn: TurnState
   timer: TimerState
+  canvas: CanvasControls
 }
 
 const initialState: GameState = {
@@ -27,6 +29,12 @@ const initialState: GameState = {
     type: TimerType.PENDING_TIMER,
     time: 0,
   },
+  canvas: {
+    lineWidth: 10,
+    colour: 'green',
+    brushType: 'stroke',
+    action: undefined,
+  },
 }
 
 const gameSlice = createSlice({
@@ -38,15 +46,19 @@ const gameSlice = createSlice({
       currentState.turn.turnStarted = true
     },
 
-    setTimer: (currentState, action: PayloadAction<TimerState>) => {
-      currentState.timer = action.payload
-    },
-
     endTurn: (currentState) => {
       currentState.turn = {
         turnStarted: false,
         word: '',
       }
+    },
+
+    setCanvasControls: (currentState, action: PayloadAction<Partial<CanvasControls>>) => {
+      currentState.canvas = Object.assign({ ...currentState.canvas }, action.payload)
+    },
+
+    setTimer: (currentState, action: PayloadAction<TimerState>) => {
+      currentState.timer = action.payload
     },
 
     resetGame: (currentState) => {
@@ -59,9 +71,15 @@ const gameSlice = createSlice({
         type: TimerType.PENDING_TIMER,
         time: 0,
       }
+      currentState.canvas = {
+        lineWidth: 10,
+        colour: 'blue',
+        brushType: 'stroke',
+        action: undefined,
+      }
     },
   },
 })
 
-export const { startTurn, endTurn, setTimer, resetGame } = gameSlice.actions
+export const { startTurn, setCanvasControls, endTurn, setTimer, resetGame } = gameSlice.actions
 export default gameSlice.reducer
