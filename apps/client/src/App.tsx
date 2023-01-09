@@ -15,8 +15,9 @@ const App = ({ children }: AppProps): JSX.Element => {
   const dispatch = useDispatch()
   const navigate = useNavigate()
 
-  const { party } = useSelector((state: RootState) => ({
+  const { party, isPlaying } = useSelector((state: RootState) => ({
     party: state.party,
+    isPlaying: state.party.isPlaying,
   }))
 
   const { data: session, isLoading: loadingSession } = useGetSessionQuery()
@@ -35,7 +36,7 @@ const App = ({ children }: AppProps): JSX.Element => {
     if (party.isActive) {
       navigate(`/party/${party.name}`)
     }
-  }, [party])
+  }, [party.isActive, isPlaying])
 
   if (loadingSession) {
     return <Loader />

@@ -1,0 +1,5 @@
+export enum TimerType {
+  PENDING_TIMER = 'PENDING_TIMER',
+  TURN_TIMER = 'TURN_TIMER',
+  NEXT_ROUND_TIMER = 'NEXT_ROUND_TIMER',
+}

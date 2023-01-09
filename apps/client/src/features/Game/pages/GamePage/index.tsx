@@ -1,23 +1,20 @@
 import { RootState } from '@/store'
 import { useSelector } from 'react-redux'
 import { Navigate } from 'react-router-dom'
+import { useGetGameQuery } from '../../api'
 import { CanvasCard, ChatCard, LeaderboardCard, StateCard } from '../../components'
 
 export const GamePage = (): JSX.Element => {
-  const { isPlaying } = useSelector((state: RootState) => ({
+  const { isPlaying, partyName } = useSelector((state: RootState) => ({
     isPlaying: state.party.isPlaying,
+    partyName: state.party.name,
   }))
 
-  if (!isPlaying) {
-    return <Navigate to="/party" />
-  }
+  useGetGameQuery()
 
-  //   <div className="grid grid-cols-8 gap-3 py-12 sm:grid-rows-1 sm:grid-cols-12 md:gap-5 h-[800px] sm:h-[592px] flex-grow">
-  //   <div className="col-span-full sm:col-span-4">{/* <MembersCard /> */}</div>
-  //   <div className="col-span-full sm:col-start-5 sm:col-span-8 flex">
-  //     <ChatCard />
-  //   </div>
-  // </div>
+  if (!isPlaying) {
+    return <Navigate to={`/party${partyName ? `/${partyName}` : ''}`} />
+  }
 
   return (
     <div>

@@ -10,7 +10,7 @@ type LeaderboardItemProps = {
 
 export const LeaderboardItem = ({ value }: LeaderboardItemProps): JSX.Element => {
   return (
-    <li className="flex items-center justify-between text-sm py-[6px]">
+    <li className="flex items-center justify-between text-sm py-[6px] w-full">
       <div className="flex items-center gap-3">
         <p
           className={classNames('w-6', {

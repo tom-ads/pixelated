@@ -150,6 +150,9 @@ io.on("connection", async function (socket: Socket) {
   });
 
   socket.on("disconnect", () => {
+    // Check if socket was part of an active game, if so, remove them from party.
+    // Check if there is only one person left in that game.
+    // end game, move back to party for other sockets.
     console.log("disconnecting...");
   });
 });

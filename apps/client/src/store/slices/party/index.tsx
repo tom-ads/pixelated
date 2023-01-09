@@ -12,6 +12,7 @@ const initialState: PartyState = {
   code: undefined,
   members: [],
   isActive: false,
+  isPlaying: false,
 }
 
 const partySlice = createSlice({
@@ -39,8 +40,12 @@ const partySlice = createSlice({
 
       currentState.isActive = false
     },
+
+    startGame: (currentState) => {
+      currentState.isPlaying = true
+    },
   },
 })
 
-export const { setParty, leaveParty } = partySlice.actions
+export const { setParty, leaveParty, startGame } = partySlice.actions
 export default partySlice.reducer

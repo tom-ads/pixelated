@@ -34,10 +34,10 @@ export const LeaderboardList = (): JSX.Element => {
     },
   ]
 
-  const sortedMembers = [...(data ?? [])]?.sort((a, b) => b.score - a.score)
+  const sortedMembers = [...(members ?? [])]?.sort((a, b) => b.score - a.score)
 
   return (
-    <ul className="flex flex-col divide-cyan-70 divide-y divide-dashed">
+    <ul className="divide-cyan-70 divide-y divide-dashed h-[267px]">
       {sortedMembers?.map((member, idx) => (
         <LeaderboardItem key={member.username} value={{ ...member, position: idx + 1 }} />
       ))}

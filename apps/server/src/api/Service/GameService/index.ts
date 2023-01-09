@@ -1,27 +1,126 @@
 import { getRandomWord } from "../../../helpers/game";
-import { PartyDocument } from "../../Model/Party";
+import { PartyDocument, PartyMember } from "../../Model/Party";
 import { PartyServiceContract } from "../PartyService";
 import { setDrawer } from "../../../helpers/game";
+import Party from "../../Model/Party";
+import { ChatServiceContract } from "../ChatService";
+import { Server } from "socket.io";
+import SocketEvent from "../../Enum/SocketEvent";
+import { socketResponse } from "../../../helpers";
+import SocketStatus from "../../Enum/SocketStatus";
+import { CheckGuessDto } from "./dto";
 
 export interface GameServiceContract {
-  setupTurn(partyId: string): Promise<PartyDocument | null>;
+  setupTurn(
+    partyId: string
+  ): Promise<{ party: PartyDocument | null; drawer: PartyMember | undefined }>;
+  checkGuess(dto: CheckGuessDto): Promise<boolean>;
+  endGame(partyId: string): Promise<PartyDocument | null>;
 }
 
 class GameService implements GameServiceContract {
-  constructor(private readonly partyService: PartyServiceContract) {}
+  constructor(
+    private readonly io: Server,
+    private readonly chatService: ChatServiceContract,
+    private readonly partyService: PartyServiceContract
+  ) {}
 
-  public async setupTurn(partyId: string): Promise<PartyDocument | null> {
+  public async setupTurn(
+    partyId: string
+  ): Promise<{ party: PartyDocument | null; drawer: PartyMember | undefined }> {
     let party = await this.partyService.findById(partyId);
     if (party) {
       const turnWord = getRandomWord();
       const members = setDrawer(party);
       party = await this.partyService.updateParty({
         partyId,
-        query: { turnWord, members },
+        query: { turnWord, members, isPlaying: true },
+      });
+    }
+
+    return {
+      party,
+      drawer: party?.members.find((member) => member.isDrawer),
+    };
+  }
+
+  public async checkGuess(dto: CheckGuessDto): Promise<boolean> {
+    const party = await this.partyService.findById(dto.partyId);
+
+    // Check if there is an active game and a word for the current turn
+    if (!party || !party?.isPlaying || !party.turnWord) {
+      return false;
+    }
+
+    // check guess is correct word in turn
+    if (party.turnWord.toLowerCase() !== dto.guess.toLowerCase()) {
+      return false;
+    }
+
+    const guesser = party.members.find(
+      (member) => member.username === dto.guesser
+    );
+    console.log("guess position", guesser?.guessedPos);
+    console.log(!guesser, guesser?.guessedPos, guesser?.isDrawer);
+    // prevent guesser from guessing again
+    if (!guesser || guesser?.guessedPos || guesser?.isDrawer) {
+      return false;
+    }
+
+    // Track position the guesser guessed at to determine their score later
+    const guessPos = party.correctGuesses + 1;
+    await this.partyService.updateParty({
+      partyId: dto.partyId,
+      query: { correctGuesses: guessPos },
+    });
+    await this.partyService.updatePartyMember({
+      partyId: dto.partyId,
+      username: dto.guesser,
+      query: { guessedPos: guessPos },
+    });
+
+    return true;
+  }
+
+  public async endTurn(partyId: string): Promise<PartyDocument | null> {
+    let party = await this.partyService.findById(partyId);
+    if (party) {
+      // calc scores
+      party = await this.partyService.updateParty({
+        partyId,
+        query: { turnWord: null },
       });
     }
 
     return party;
+  }
+
+  public async endGame(partyId: string): Promise<PartyDocument | null> {
+    await this.chatService.clearMessages(partyId);
+    const endGame = await Party.findByIdAndUpdate(
+      { _id: partyId },
+      {
+        $set: {
+          round: 1,
+          correctGuesses: 0,
+          turnWord: null,
+          isPlaying: false,
+          "members.$[].rounds": 0,
+          "members.$[].score": 0,
+        },
+      },
+      { new: true }
+    );
+
+    console.log(`[Game] Ended game for party ${partyId}`);
+    this.io.in(partyId).emit(
+      SocketEvent.END_GAME,
+      socketResponse(SocketStatus.SUCCESS, {
+        data: endGame?.serialize(),
+      })
+    );
+
+    return endGame;
   }
 }
 

@@ -31,3 +31,7 @@ export function setDrawer(party: PartyDocument): PartyMember[] {
 
   return members;
 }
+
+export function obscureWord(word: string) {
+  return word.replace(/./g, "-");
+}

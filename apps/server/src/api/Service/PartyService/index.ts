@@ -24,12 +24,14 @@ export class PartyService implements PartyServiceContract {
       name: dto.name,
       code: "123",
       isPlaying: false,
+      correctGuesses: 0,
       round: 1,
       members: [
         {
           username: dto.ownerUsername,
           isOwner: true,
           isDrawer: false,
+          guessedPos: 0,
           rounds: 0,
           score: 0,
           socketId: dto.socketId,
@@ -107,6 +109,7 @@ export class PartyService implements PartyServiceContract {
           "members.$.isOwner": dto.query.isOwner,
           "members.$.socketId": dto.query.socketId,
           "members.$.isDrawer": dto.query.isDrawer,
+          "members.$.guessedPos": dto.query.guessedPos,
           "members.$.score": dto.query.score,
           "members.$.rounds": dto.query.rounds,
         },

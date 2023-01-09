@@ -1,4 +1,3 @@
-import { PartyStep } from '@/store/slices/game'
 import { useMemo } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 
@@ -28,7 +27,7 @@ const views: PartyViews = {
 export const PartyWrapper = (): JSX.Element => {
   const location = useLocation()
 
-  const activeView = useMemo(() => views[location.pathname as PartyStep], [location.pathname])
+  const activeView = useMemo(() => views[location.pathname], [location.pathname])
 
   return (
     <div className="flex items-center justify-center flex-grow py-8">

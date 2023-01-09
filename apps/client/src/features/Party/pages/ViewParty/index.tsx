@@ -3,12 +3,13 @@ import { useStartGameMutation } from '@/features/Game'
 import { useGetPartyQuery, useLeavePartyMutation } from '../../api'
 import { RootState } from '@/store'
 import { useSelector } from 'react-redux'
-import { Navigate } from 'react-router-dom'
 import { ChatCard, MembersCard } from '../../components/Cards'
+import { Navigate } from 'react-router-dom'
 
 export const ViewPartyPage = (): JSX.Element => {
-  const { party } = useSelector((state: RootState) => ({
+  const { party, isPlaying } = useSelector((state: RootState) => ({
     party: state.party,
+    isPlaying: state.party.isPlaying,
   }))
 
   const [leaveParty, { isLoading: isLeaving }] = useLeavePartyMutation()
@@ -24,10 +25,10 @@ export const ViewPartyPage = (): JSX.Element => {
   }
 
   if (!party.isActive) {
-    return <Navigate to="/party" replace />
+    return <Navigate to="/" />
   }
 
-  if (party.isPlaying) {
+  if (isPlaying) {
     return <Navigate to="/game" />
   }
 
@@ -56,7 +57,7 @@ export const ViewPartyPage = (): JSX.Element => {
         <Button variant="blank" onClick={() => leaveParty()} loading={isLeaving} danger>
           Leave Party
         </Button>
-        <Button disabled={isLeaving || isStarting} onClick={handleStartGame}>
+        <Button disabled={isLeaving} loading={isStarting} onClick={handleStartGame}>
           Start Game
         </Button>
       </div>

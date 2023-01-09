@@ -1,25 +1,67 @@
+import { TimerType } from '@/enums/TimerType'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
+export type TimerState = {
+  type: TimerType
+  time: number
+}
+
+export interface TurnState {
+  turnStarted: boolean
+  word: string | null
+}
+
 interface GameState {
-  isPlaying: boolean
-  isDrawer: boolean
+  guessed: false
+  turn: TurnState
+  timer: TimerState
 }
 
 const initialState: GameState = {
-  isPlaying: false,
-  isDrawer: false,
+  guessed: false,
+  turn: {
+    turnStarted: false,
+    word: '',
+  },
+  timer: {
+    type: TimerType.PENDING_TIMER,
+    time: 0,
+  },
 }
 
 const gameSlice = createSlice({
   name: 'game',
   initialState,
   reducers: {
-    startGame: (currentState, action: PayloadAction<GameState>) => {
-      currentState.isPlaying = action.payload.isPlaying
-      currentState.isDrawer = action.payload.isDrawer
+    startTurn: (currentState, action: PayloadAction<Omit<TurnState, 'turnStarted'>>) => {
+      currentState.turn.word = action.payload.word
+      currentState.turn.turnStarted = true
+    },
+
+    setTimer: (currentState, action: PayloadAction<TimerState>) => {
+      currentState.timer = action.payload
+    },
+
+    endTurn: (currentState) => {
+      currentState.turn = {
+        turnStarted: false,
+        word: '',
+      }
+    },
+
+    resetGame: (currentState) => {
+      currentState.guessed = false
+      currentState.turn = {
+        turnStarted: false,
+        word: '',
+      }
+      currentState.timer = {
+        type: TimerType.PENDING_TIMER,
+        time: 0,
+      }
     },
   },
 })
 
-export const { startGame } = gameSlice.actions
+export const { startTurn, endTurn, setTimer, resetGame } = gameSlice.actions
 export default gameSlice.reducer

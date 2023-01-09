@@ -4,6 +4,7 @@ export interface PartyMember {
   username: string;
   score: number;
   rounds: number;
+  guessedPos: number;
   isDrawer: boolean;
   isOwner: boolean;
   socketId: string;
@@ -12,7 +13,8 @@ export interface PartyMember {
 export interface IParty {
   name: string;
   code: string;
-  turnWord: string;
+  correctGuesses: number;
+  turnWord: string | null;
   round: number;
   isPlaying: boolean;
   members: PartyMember[];
@@ -38,6 +40,7 @@ export const PartySchema = new Schema<IParty, PartyModel, PartyInstanceMethods>(
     name: String,
     code: String,
     round: Number,
+    correctGuesses: Number,
     turnWord: String,
     isPlaying: Boolean,
     members: Array,
@@ -53,6 +56,7 @@ PartySchema.methods = {
       id: this.id,
       name: this.name,
       round: this.round,
+      correctGuesses: this.correctGuesses,
       turnWord: this.turnWord,
       isPlaying: this.isPlaying,
       code: this.code,
@@ -60,6 +64,7 @@ PartySchema.methods = {
         this.members?.map((member: PartyMember) => ({
           username: member.username,
           rounds: member.rounds,
+          guessedPos: member.guessedPos,
           isDrawer: member.isDrawer,
           isOwner: member.isOwner,
           score: member.score,

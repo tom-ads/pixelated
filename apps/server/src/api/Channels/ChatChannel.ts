@@ -1,22 +1,40 @@
 import { Socket } from "socket.io";
 import { socketResponse } from "../../helpers";
+import { MessageType } from "../Enum/MessageType";
 import SocketError from "../Enum/SocketError";
 import SocketEvent from "../Enum/SocketEvent";
 import SocketStatus from "../Enum/SocketStatus";
 import { ChatServiceContract } from "../Service/ChatService";
 import { SendMessageDto } from "../Service/ChatService/dto";
+import { GameServiceContract } from "../Service/GameService";
+import { PartyServiceContract } from "../Service/PartyService";
 
 export class ChatChannel {
-  constructor(private readonly chatService: ChatServiceContract) {}
+  constructor(
+    private readonly chatService: ChatServiceContract,
+    private readonly gameService: GameServiceContract
+  ) {}
 
   public async sendMessage(socket: Socket, dto: SendMessageDto, callback: any) {
     const session = socket.request.session;
 
     try {
+      // Check if message is a guess message for an active party game
+      const correctGuess = await this.gameService.checkGuess({
+        partyId: dto.partyId,
+        guesser: session.user.username,
+        guess: dto.message,
+      });
+
       // Store party message
       const createdMessage = await this.chatService.createMessage({
         ...dto,
-        sender: session.user.username,
+        message: correctGuess
+          ? `${session.user.username} has guessed the word!`
+          : dto.message,
+        sender: correctGuess
+          ? MessageType.SYSTEM_MESSAGE
+          : session.user.username,
       });
 
       // Send message back to sender

@@ -2,7 +2,7 @@ import { SocketResponse } from '@/api/types/SocketResponse'
 import SocketEvent from '@/enums/SocketEvent'
 import SocketStatus from '@/enums/SocketStatus'
 import { appendMessage, clearMessages, setMessages } from '@/store/slices/chat'
-import { leaveParty, setParty } from '@/store/slices/party'
+import { leaveParty, setParty, startGame } from '@/store/slices/party'
 import { Message } from '@/types'
 import Party from '@/types/Models/Party'
 import { BaseQueryApi, FetchBaseQueryError } from '@reduxjs/toolkit/dist/query'
@@ -110,8 +110,8 @@ const partyEndpoints = appApi.injectEndpoints({
             },
           )
 
-          appSocket.on(SocketEvent.START_GAME, (response: SocketResponse<{ party: Party }>) => {
-            dispatch(setParty(response.result.data.party))
+          appSocket.on(SocketEvent.START_GAME, () => {
+            dispatch(startGame())
             dispatch(clearMessages())
           })
 

@@ -25,7 +25,7 @@ export const ChatInput = ({
   size = 'md',
   block = false,
 }: ChatInputProps): JSX.Element => {
-  const [sendMessage] = useSendMessageMutation()
+  const [sendMessage, { isLoading: isSending }] = useSendMessageMutation()
 
   const { partyId } = useSelector((state: RootState) => ({
     partyId: state.party.id,
@@ -70,7 +70,7 @@ export const ChatInput = ({
             block={block}
             type="submit"
             size={size}
-            loading={isFetching}
+            loading={isFetching || isSending}
             disabled={!watch('message')}
             className="shadow-none"
           >
