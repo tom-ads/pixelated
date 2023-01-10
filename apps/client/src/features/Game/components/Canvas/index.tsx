@@ -13,6 +13,7 @@ export const canvasColours = {
   blue: '#2BB4BD',
   purple: '#622BBD',
   pink: '#BD2B82',
+  white: '#F9F9F9',
 }
 
 /* 
