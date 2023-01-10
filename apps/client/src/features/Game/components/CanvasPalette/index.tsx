@@ -28,7 +28,7 @@ export const CanvasPalette = (): JSX.Element => {
           disabled={brushType === 'erase'}
           onClick={() => dispatch(setCanvasControls({ colour: colour as ColourKeys }))}
           className={classNames(
-            'w-7 h-7 rounded-full ring ring-offset-[3px] ring-offset-cyan-70 transition-all',
+            'w-7 h-7 rounded-full ring ring-offset-[3px] ring-offset-cyan-70 transition-all disabled:opacity-80',
             {
               'ring-transparent': selectedColour !== colour,
               'ring-yellow-60': selectedColour === colour,

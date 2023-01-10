@@ -1,7 +1,8 @@
 import { alignOddLineWidth } from '@/helpers/game'
 import { RootState } from '@/store'
+import { setCanvasControls } from '@/store/slices/game'
 import { MouseEvent, useEffect, useRef, useState } from 'react'
-import { useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { useGetDrawingQuery, useSendDrawingMutation } from '../../api'
 import { ColourKeys } from '../../types'
 
@@ -16,18 +17,21 @@ export const canvasColours = {
   white: '#F9F9F9',
 }
 
-/* 
+/*
   Note: Canvas does not handle different device screens or
   changing canvas width/heights, this effects how the drawers
   strokes are to their mouse position.
 */
 export const Canvas = (): JSX.Element => {
+  const dispatch = useDispatch()
+
   const [isDrawing, setIsDrawing] = useState(false)
 
-  const { partyId, brushWidth, brushColour } = useSelector((state: RootState) => ({
+  const { partyId, brushWidth, brushColour, action } = useSelector((state: RootState) => ({
     partyId: state.party.id,
     brushWidth: state.game.canvas.lineWidth,
     brushColour: state.game.canvas.colour,
+    action: state.game.canvas.action,
   }))
 
   const [sendDrawing] = useSendDrawingMutation()
@@ -94,11 +98,10 @@ export const Canvas = (): JSX.Element => {
     }
   }
 
-  useEffect(() => {
-    if (drawPath) {
-      drawStroke(drawPath.pX, drawPath.pY, drawPath.lX, drawPath.lY, drawPath.clr as ColourKeys)
-    }
-  }, [drawPath])
+  const clearCanvas = () => {
+    const ctx = canvasRef.current?.getContext('2d')
+    if (ctx) ctx.clearRect(0, 0, 746, 640)
+  }
 
   const onMouseDown = ({ nativeEvent }: MouseEvent<HTMLCanvasElement>) => {
     setIsDrawing(true)
@@ -116,6 +119,34 @@ export const Canvas = (): JSX.Element => {
       prevY: nativeEvent.offsetY,
     }
   }
+
+  useEffect(() => {
+    if (action && partyId) {
+      sendDrawing({ pId: partyId, act: action })
+      dispatch(setCanvasControls({ action: undefined }))
+      clearCanvas()
+    }
+  }, [action])
+
+  useEffect(() => {
+    if (drawPath) {
+      if (drawPath.act) {
+        if (drawPath.act === 'reset') {
+          clearCanvas()
+        } else if (drawPath.act === 'undo') {
+          // undo
+        }
+      } else {
+        drawStroke(
+          drawPath.pX!,
+          drawPath.pY!,
+          drawPath.lX!,
+          drawPath.lY!,
+          drawPath.clr! as ColourKeys,
+        )
+      }
+    }
+  }, [drawPath])
 
   return (
     <canvas

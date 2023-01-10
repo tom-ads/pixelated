@@ -70,14 +70,8 @@ const gameEndpoints = appApi.injectEndpoints({
         await appSockedConnected
 
         return new Promise((resolve) => {
-          appSocket.emit(SocketEvent.GAME_DRAWING, data, (response: SocketResponse<void>) => {
-            if (response.type === SocketStatus.ERROR) {
-              resolve({ error: { data: response.result.error } as FetchBaseQueryError })
-              return
-            }
-            console.log('logging')
-            resolve({ data: undefined })
-          })
+          appSocket.emit(SocketEvent.GAME_DRAWING, data)
+          resolve({ data: undefined })
         })
       },
     }),

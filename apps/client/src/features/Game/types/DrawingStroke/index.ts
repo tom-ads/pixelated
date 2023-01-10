@@ -1,9 +1,18 @@
-export type DrawingStroke = {
-  pId: string
+export type CanvasAction = 'undo' | 'reset' | undefined
+
+type StrokeStyling = {
+  clr: string
+  ls: number
+}
+
+type StrokePos = {
   pX: number
   pY: number
   lX: number
   lY: number
-  clr: string
-  ls: number
+}
+
+export type DrawingStroke = Partial<StrokePos & StrokeStyling> & {
+  pId: string
+  act?: CanvasAction
 }

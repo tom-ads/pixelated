@@ -14,7 +14,7 @@ export const CanvasBrushes = () => {
       <button
         type="button"
         onClick={() => dispatch(setCanvasControls({ brushType: 'stroke', colour: 'green' }))}
-        className={classNames('flex flex-col items-center gap-[2px]', {
+        className={classNames('flex flex-col items-center gap-[2px] transition-colors', {
           'text-white': brushType !== 'stroke',
           'text-yellow-60': brushType === 'stroke',
         })}
@@ -25,7 +25,7 @@ export const CanvasBrushes = () => {
       <button
         type="button"
         onClick={() => dispatch(setCanvasControls({ brushType: 'erase', colour: 'white' }))}
-        className={classNames('flex flex-col items-center gap-[2px]', {
+        className={classNames('flex flex-col items-center gap-[2px] transition-colors', {
           'text-white': brushType !== 'erase',
           'text-yellow-60': brushType === 'erase',
         })}
