@@ -1,4 +1,4 @@
-export type CanvasAction = 'undo' | 'reset' | undefined
+export type CanvasAction = 'reset' | undefined
 
 type StrokeStyling = {
   clr: string

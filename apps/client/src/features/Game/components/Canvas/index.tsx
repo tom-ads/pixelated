@@ -70,6 +70,11 @@ export const Canvas = (): JSX.Element => {
       ctx.moveTo(alignOddLineWidth(11, prevX), prevY)
       ctx.lineTo(alignOddLineWidth(11, localX), localY)
       ctx.stroke()
+
+      prevPos.current = {
+        prevX: localX,
+        prevY: localY,
+      }
     }
   }
 
@@ -89,11 +94,6 @@ export const Canvas = (): JSX.Element => {
           clr: brushColour,
           ls: brushWidth,
         })
-      }
-
-      prevPos.current = {
-        prevX: localX,
-        prevY: localY,
       }
     }
   }
@@ -130,12 +130,8 @@ export const Canvas = (): JSX.Element => {
 
   useEffect(() => {
     if (drawPath) {
-      if (drawPath.act) {
-        if (drawPath.act === 'reset') {
-          clearCanvas()
-        } else if (drawPath.act === 'undo') {
-          // undo
-        }
+      if (drawPath.act && drawPath?.act === 'reset') {
+        clearCanvas()
       } else {
         drawStroke(
           drawPath.pX!,
