@@ -3,6 +3,7 @@ import { RootState } from '@/store'
 import { MouseEvent, useEffect, useRef, useState } from 'react'
 import { useSelector } from 'react-redux'
 import { useGetDrawingQuery, useSendDrawingMutation } from '../../api'
+import { ColourKeys } from '../../types'
 
 export const canvasColours = {
   red: '#BD2B2B',
@@ -14,6 +15,11 @@ export const canvasColours = {
   pink: '#BD2B82',
 }
 
+/* 
+  Note: Canvas does not handle different device screens or
+  changing canvas width/heights, this effects how the drawers
+  strokes are to their mouse position.
+*/
 export const Canvas = (): JSX.Element => {
   const [isDrawing, setIsDrawing] = useState(false)
 
@@ -33,7 +39,13 @@ export const Canvas = (): JSX.Element => {
     prevY: 0,
   })
 
-  const drawStroke = (prevX: number, prevY: number, localX: number, localY: number) => {
+  const drawStroke = (
+    prevX: number,
+    prevY: number,
+    localX: number,
+    localY: number,
+    colour?: ColourKeys,
+  ) => {
     const ctx = canvasRef.current?.getContext('2d')
     if (ctx) {
       ctx.beginPath()
@@ -41,7 +53,7 @@ export const Canvas = (): JSX.Element => {
       ctx.lineCap = 'round'
       ctx.lineJoin = 'round'
       ctx.lineWidth = brushWidth
-      ctx.strokeStyle = canvasColours[brushColour]
+      ctx.strokeStyle = canvasColours[colour ?? brushColour]
 
       /*
         Here we specify the moveTo / lineTo of the current stroke. It first
@@ -69,7 +81,7 @@ export const Canvas = (): JSX.Element => {
           pY: prevY,
           lX: localX,
           lY: localY,
-          clr: canvasColours[brushColour],
+          clr: brushColour,
           ls: brushWidth,
         })
       }
@@ -83,7 +95,7 @@ export const Canvas = (): JSX.Element => {
 
   useEffect(() => {
     if (drawPath) {
-      drawStroke(drawPath.pX, drawPath.pY, drawPath.lX, drawPath.lY)
+      drawStroke(drawPath.pX, drawPath.pY, drawPath.lX, drawPath.lY, drawPath.clr as ColourKeys)
     }
   }, [drawPath])
 
