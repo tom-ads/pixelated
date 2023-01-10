@@ -6,7 +6,7 @@ import SocketStatus from "../Enum/SocketStatus";
 import { ChatServiceContract } from "../Service/ChatService";
 import { GameServiceContract } from "../Service/GameService";
 import { PartyServiceContract } from "../Service/PartyService";
-import { StartGameDto } from "../Service/GameService/dto";
+import { GameDrawingDto, StartGameDto } from "../Service/GameService/dto";
 import {
   clearIntervalAsync,
   setIntervalAsync,
@@ -168,5 +168,14 @@ export class GameChannel {
         })
       );
     }
+  }
+
+  public async sendDrawing(socket: Socket, data: GameDrawingDto) {
+    socket.broadcast.to(data.pId).emit(
+      SocketEvent.GAME_DRAWING,
+      socketResponse(SocketStatus.SUCCESS, {
+        data,
+      })
+    );
   }
 }

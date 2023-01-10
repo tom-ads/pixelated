@@ -1,2 +1,3 @@
 import StartGameRequest from './start-game'
-export type { StartGameRequest }
+import SendDrawingRequest from './send-drawing'
+export type { StartGameRequest, SendDrawingRequest }

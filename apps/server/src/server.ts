@@ -25,7 +25,7 @@ import { PartyChannel } from "./api/Channels/PartyChannel";
 import { SendMessageDto } from "./api/Service/ChatService/dto";
 import { ChatChannel } from "./api/Channels/ChatChannel";
 import { ChatService } from "./api/Service/ChatService";
-import { StartGameDto } from "./api/Service/GameService/dto";
+import { GameDrawingDto, StartGameDto } from "./api/Service/GameService/dto";
 import GameService from "./api/Service/GameService";
 import { GameChannel } from "./api/Channels/GameChannel";
 
@@ -76,6 +76,8 @@ export const container = createContainer({
 })();
 
 import { sessionConfig } from "./config/session";
+import { socketResponse } from "./helpers";
+import SocketStatus from "./api/Enum/SocketStatus";
 const sessionMiddleware = session(sessionConfig);
 app.use(sessionMiddleware);
 
@@ -142,6 +144,14 @@ io.on("connection", async function (socket: Socket) {
   socket.on(SocketEvent.START_GAME, async (data: StartGameDto, callback) => {
     await container.resolve("gameChannel").startGame(socket, data, callback);
   });
+
+  socket.on(
+    SocketEvent.GAME_DRAWING,
+    async (data: GameDrawingDto, callback) => {
+      await container.resolve("gameChannel").sendDrawing(socket, data);
+      // callback(socketResponse(SocketStatus.SUCCESS, { data: undefined }));
+    }
+  );
 
   socket.on("error", (error) => {
     if (error && error.message === "Unauthorized") {

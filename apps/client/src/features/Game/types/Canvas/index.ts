@@ -1,4 +1,4 @@
-import { canvasColours } from '../components/Canvas'
+import { canvasColours } from '../../components/Canvas'
 
 export type CanvasControls = {
   lineWidth: number

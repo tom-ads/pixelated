@@ -18,6 +18,7 @@ export enum SocketEvent {
   END_TURN = "END_TURN",
   GAME_DATA = "GAME_DATA",
   GAME_TIMER = "GAME_TIMER",
+  GAME_DRAWING = "GAME_DRAWING",
 }
 
 export default SocketEvent;

@@ -6,6 +6,8 @@ import { setParty } from '@/store/slices/party'
 import Party from '@/types/Models/Party'
 import { FetchBaseQueryError } from '@reduxjs/toolkit/dist/query'
 import appApi, { appSockedConnected, appSocket } from 'api'
+import { DrawingStroke } from '../types'
+import { SendDrawingRequest } from './types/requests'
 
 const gameEndpoints = appApi.injectEndpoints({
   endpoints: (build) => ({
@@ -28,7 +30,6 @@ const gameEndpoints = appApi.injectEndpoints({
     getGame: build.query<void, void>({
       // Set default query function, will ignore baseQuery
       queryFn: () => ({ data: undefined }),
-      // Handle WS for parties and caching to store
       async onCacheEntryAdded(
         _,
         { cacheDataLoaded, updateCachedData, cacheEntryRemoved, dispatch },
@@ -63,8 +64,49 @@ const gameEndpoints = appApi.injectEndpoints({
         }
       },
     }),
+
+    sendDrawing: build.mutation<void, SendDrawingRequest>({
+      queryFn: async (data: SendDrawingRequest) => {
+        await appSockedConnected
+
+        return new Promise((resolve) => {
+          appSocket.emit(SocketEvent.GAME_DRAWING, data, (response: SocketResponse<void>) => {
+            if (response.type === SocketStatus.ERROR) {
+              resolve({ error: { data: response.result.error } as FetchBaseQueryError })
+              return
+            }
+            console.log('logging')
+            resolve({ data: undefined })
+          })
+        })
+      },
+    }),
+
+    getDrawing: build.query<DrawingStroke, void>({
+      // Set default query function, will ignore baseQuery
+      queryFn: () => ({ data: {} as DrawingStroke }),
+      async onCacheEntryAdded(_, { cacheDataLoaded, updateCachedData, cacheEntryRemoved }) {
+        try {
+          await cacheDataLoaded
+
+          // Get or open a web socket connection
+          await appSockedConnected
+
+          appSocket.on(SocketEvent.GAME_DRAWING, (response: SocketResponse<DrawingStroke>) => {
+            updateCachedData(() => response.result.data)
+          })
+
+          // Cleanup
+          await cacheEntryRemoved
+          appSocket.off(SocketEvent.GAME_DRAWING)
+        } catch {
+          console.log('throwing cache')
+        }
+      },
+    }),
   }),
   overrideExisting: false,
 })
 
-export const { useStartGameMutation, useGetGameQuery } = gameEndpoints
+export const { useStartGameMutation, useGetGameQuery, useSendDrawingMutation, useGetDrawingQuery } =
+  gameEndpoints
