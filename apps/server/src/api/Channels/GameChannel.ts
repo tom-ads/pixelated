@@ -13,10 +13,11 @@ import {
 } from "set-interval-async/dynamic";
 import { io } from "../../server";
 import { TimerType } from "../Enum/TimerType";
-import { obscureWord } from "../../helpers/game";
+import { hasNextDrawer, obscureWord, setupDrawer } from "../../helpers/game";
 import { gameConfig } from "../../config/game";
 import { IMessage } from "../Model/Message";
 import { MessageType } from "../Enum/MessageType";
+import { awaiter } from "../../helpers/promise";
 
 export class GameChannel {
   constructor(
@@ -64,58 +65,30 @@ export class GameChannel {
 
       // Start game interval
       const gameInterval = setIntervalAsync(async () => {
-        let updatedParty = await this.gameService.setupTurn(party.id);
-        if (!updatedParty.drawer) {
-          if (updatedParty.party?.round === 3) {
+        let updatedGame = await this.partyService.findById(party.id);
+        if (!updatedGame) return;
+
+        if (!hasNextDrawer(updatedGame.members, updatedGame.round)) {
+          if (updatedGame?.round === 3) {
             await this.gameService.endGame(party.id);
             clearIntervalAsync(gameInterval);
             return;
           } else {
-            updatedParty = await this.gameService.setupRound(
+            updatedGame = await this.gameService.setupRound(
               party.id,
-              updatedParty.party!.round
+              updatedGame.round
             );
           }
         }
 
-        io.in(party.id).emit(
-          SocketEvent.RECEIVE_MESSAGE,
-          socketResponse(SocketStatus.SUCCESS, {
-            data: {
-              partyId: party.id,
-              sender: MessageType.SYSTEM_MESSAGE,
-              message: `Turn starting. ${updatedParty.drawer?.username} is the drawer.`,
-            } satisfies IMessage,
-          })
+        const { members } = setupDrawer(
+          updatedGame!.members,
+          updatedGame!.round
         );
 
-        // Inform drawer that it is their turn w/ the word included in the party
-        io.to(updatedParty.drawer!.socketId).emit(
-          SocketEvent.START_TURN,
-          socketResponse(SocketStatus.SUCCESS, {
-            data: updatedParty.party!.serialize(),
-          })
-        );
-
-        // Broadcast to guessers that the game has started
-        io.to(party.id)
-          .except(updatedParty.drawer!.socketId)
-          .emit(
-            SocketEvent.START_TURN,
-            socketResponse(SocketStatus.SUCCESS, {
-              data: {
-                ...updatedParty.party!.serialize(),
-                turnWord: obscureWord(updatedParty.party!.turnWord as string),
-              },
-            })
-          );
-
-        console.log(
-          `[Game] Starting next turn with ${
-            updatedParty.drawer!.username
-          } as drawer in round ${updatedParty.party?.round} for party ${
-            party.id
-          }`
+        updatedGame = await this.gameService.startTurn(
+          updatedGame?.id,
+          members
         );
 
         // Turn countdown timer
@@ -124,15 +97,8 @@ export class GameChannel {
           io.in(party.id).emit(
             SocketEvent.GAME_TIMER,
             socketResponse(SocketStatus.SUCCESS, {
-              data: {
-                type: TimerType.TURN_TIMER,
-                time: turnCounter,
-              },
+              data: { type: TimerType.TURN_TIMER, time: turnCounter },
             })
-          );
-
-          console.log(
-            `[Game] Party ${party.id} turn counter(${turnCounter}s) for drawer ${updatedParty.drawer?.username}`
           );
 
           turnCounter--;
@@ -140,16 +106,12 @@ export class GameChannel {
             clearInterval(turnTimer);
           }
         }, 1000);
+        await awaiter(gameConfig.turnDurationSeconds * 1000 + 2000);
 
-        // Pause interval until the turn is over
-        await new Promise<void>((resolve) =>
-          setTimeout(resolve, gameConfig.turnDurationSeconds * 1000 + 2000)
-        );
-
-        updatedParty.party = await this.gameService.endTurn(party.id);
+        updatedGame = await this.gameService.endTurn(party.id);
 
         // Internal timer before starting next game interval
-        await new Promise<void>((resolve) => setTimeout(resolve, 10000));
+        await awaiter(10000);
       }, 1000);
     } catch (error) {
       console.log(

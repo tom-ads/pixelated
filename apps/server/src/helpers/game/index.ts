@@ -15,12 +15,15 @@ export function getRandomWord(excluded?: string[]) {
   return validWords[Math.floor(Math.random() * validWords.length)];
 }
 
-export function setDrawer(party: PartyDocument): PartyMember[] {
+export function setupDrawer(
+  members: PartyMember[],
+  round: number
+): { drawer: PartyMember; members: PartyMember[] } {
   let drawerFound = false;
-  const members = party.members.map((member) => {
+  members = members.map((member) => {
     if (member.isDrawer) {
       member.isDrawer = false;
-    } else if (member.rounds < party!.round && !drawerFound) {
+    } else if (member.rounds < round && !drawerFound) {
       member.isDrawer = true;
       member.rounds += 1;
       drawerFound = true;
@@ -29,7 +32,17 @@ export function setDrawer(party: PartyDocument): PartyMember[] {
     return member;
   });
 
-  return members;
+  return {
+    drawer: members.find((member) => member.isDrawer)!,
+    members,
+  };
+}
+
+export function hasNextDrawer(
+  members: PartyMember[],
+  currentRound: number
+): boolean {
+  return members.some((member) => member.rounds !== currentRound);
 }
 
 export function obscureWord(word: string) {
