@@ -1,5 +1,6 @@
 import { TimerType } from '@/enums/TimerType'
 import { CanvasControls } from '@/features/Game'
+import { PartyMember } from '@/types'
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 export type TimerState = {
@@ -8,6 +9,7 @@ export type TimerState = {
 }
 
 export interface TurnState {
+  drawer?: PartyMember
   turnStarted: boolean
   word: string | null
 }
@@ -22,6 +24,7 @@ interface GameState {
 const initialState: GameState = {
   guessed: false,
   turn: {
+    drawer: undefined,
     turnStarted: false,
     word: '',
   },
@@ -42,12 +45,14 @@ const gameSlice = createSlice({
   initialState,
   reducers: {
     startTurn: (currentState, action: PayloadAction<Omit<TurnState, 'turnStarted'>>) => {
+      currentState.turn.drawer = action.payload.drawer
       currentState.turn.word = action.payload.word
       currentState.turn.turnStarted = true
     },
 
     endTurn: (currentState) => {
       currentState.turn = {
+        drawer: undefined,
         turnStarted: false,
         word: '',
       }
@@ -64,6 +69,7 @@ const gameSlice = createSlice({
     resetGame: (currentState) => {
       currentState.guessed = false
       currentState.turn = {
+        drawer: undefined,
         turnStarted: false,
         word: '',
       }

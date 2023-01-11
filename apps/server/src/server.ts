@@ -145,13 +145,9 @@ io.on("connection", async function (socket: Socket) {
     await container.resolve("gameChannel").startGame(socket, data, callback);
   });
 
-  socket.on(
-    SocketEvent.GAME_DRAWING,
-    async (data: GameDrawingDto, callback) => {
-      await container.resolve("gameChannel").sendDrawing(socket, data);
-      // callback(socketResponse(SocketStatus.SUCCESS, { data: undefined }));
-    }
-  );
+  socket.on(SocketEvent.GAME_DRAWING, async (data: GameDrawingDto) => {
+    await container.resolve("gameChannel").sendDrawing(socket, data);
+  });
 
   socket.on("error", (error) => {
     if (error && error.message === "Unauthorized") {

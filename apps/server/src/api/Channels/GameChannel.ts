@@ -15,6 +15,8 @@ import { io } from "../../server";
 import { TimerType } from "../Enum/TimerType";
 import { obscureWord } from "../../helpers/game";
 import { gameConfig } from "../../config/game";
+import { IMessage } from "../Model/Message";
+import { MessageType } from "../Enum/MessageType";
 
 export class GameChannel {
   constructor(
@@ -36,16 +38,17 @@ export class GameChannel {
       );
     }
 
-    // if (party.members.length < 2) {
-    //   return callback(
-    //     socketResponse(SocketStatus.ERROR, {
-    //       error: {
-    //         type: SocketError.MEMBER_MIN_LIMIT,
-    //         message: "Party must have atleast 2 members to start game!",
-    //       },
-    //     })
-    //   );
-    // }
+    if (party.members.length < 2) {
+      // Send message in chat instead... but only to sender
+      // return callback(
+      //   socketResponse(SocketStatus.ERROR, {
+      //     error: {
+      //       type: SocketError.MEMBER_MIN_LIMIT,
+      //       message: "Party must have atleast 2 members to start game!",
+      //     },
+      //   })
+      // );
+    }
 
     try {
       // Clear party chat
@@ -63,24 +66,28 @@ export class GameChannel {
       const gameInterval = setIntervalAsync(async () => {
         let updatedParty = await this.gameService.setupTurn(party.id);
         if (!updatedParty.drawer) {
-          // No drawer and game has hit its max round limit, end game
           if (updatedParty.party?.round === 3) {
-            // TODO: add timer, so they can view the final scoreboard.
             await this.gameService.endGame(party.id);
             clearIntervalAsync(gameInterval);
             return;
           } else {
-            // All members have drawn, start next round
-            const nextRound = (updatedParty.party!.round += 1);
-            updatedParty.party = await this.partyService.updateParty({
-              partyId: party.id,
-              query: { round: nextRound },
-            });
-            console.log(`[Game] Next round starting for party: ${party.id}`);
-
-            updatedParty = await this.gameService.setupTurn(party.id);
+            updatedParty = await this.gameService.setupRound(
+              party.id,
+              updatedParty.party!.round
+            );
           }
         }
+
+        io.in(party.id).emit(
+          SocketEvent.RECEIVE_MESSAGE,
+          socketResponse(SocketStatus.SUCCESS, {
+            data: {
+              partyId: party.id,
+              sender: MessageType.SYSTEM_MESSAGE,
+              message: `Turn starting. ${updatedParty.drawer?.username} is the drawer.`,
+            } satisfies IMessage,
+          })
+        );
 
         // Inform drawer that it is their turn w/ the word included in the party
         io.to(updatedParty.drawer!.socketId).emit(
@@ -136,21 +143,10 @@ export class GameChannel {
 
         // Pause interval until the turn is over
         await new Promise<void>((resolve) =>
-          setTimeout(resolve, gameConfig.turnDurationSeconds * 1000)
+          setTimeout(resolve, gameConfig.turnDurationSeconds * 1000 + 2000)
         );
 
-        updatedParty.party = await this.partyService.findById(party.id);
-        io.in(party.id).emit(
-          SocketEvent.END_TURN,
-          socketResponse(SocketStatus.SUCCESS, {
-            data: updatedParty.party!.serialize(),
-          })
-        );
-        console.log(
-          `[GAME] Turn ended for ${updatedParty.drawer!.username} in round(${
-            updatedParty.party?.round
-          }) for party ${party.id}`
-        );
+        updatedParty.party = await this.gameService.endTurn(party.id);
 
         // Internal timer before starting next game interval
         await new Promise<void>((resolve) => setTimeout(resolve, 10000));

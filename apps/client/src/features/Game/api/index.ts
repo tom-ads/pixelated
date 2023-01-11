@@ -1,7 +1,8 @@
 import { SocketResponse } from '@/api/types/SocketResponse'
 import SocketEvent from '@/enums/SocketEvent'
 import SocketStatus from '@/enums/SocketStatus'
-import { startTurn, resetGame, TimerState, setTimer } from '@/store/slices/game'
+import { clearMessages } from '@/store/slices/chat'
+import { startTurn, resetGame, TimerState, setTimer, endTurn } from '@/store/slices/game'
 import { setParty } from '@/store/slices/party'
 import Party from '@/types/Models/Party'
 import { FetchBaseQueryError } from '@reduxjs/toolkit/dist/query'
@@ -41,13 +42,21 @@ const gameEndpoints = appApi.injectEndpoints({
           await appSockedConnected
 
           appSocket.on(SocketEvent.START_TURN, (response: SocketResponse<Party>) => {
-            dispatch(startTurn({ word: response.result.data.turnWord }))
+            const drawer = response.result.data.members?.find((member) => member.isDrawer)
+            dispatch(startTurn({ word: response.result.data.turnWord, drawer }))
+            dispatch(setParty(response.result.data))
+            updateCachedData(() => response.result.data)
+          })
+
+          appSocket.on(SocketEvent.END_TURN, (response: SocketResponse<Party>) => {
+            dispatch(endTurn())
             dispatch(setParty(response.result.data))
             updateCachedData(() => response.result.data)
           })
 
           appSocket.on(SocketEvent.END_GAME, (response: SocketResponse<Party>) => {
             dispatch(setParty(response.result.data))
+            dispatch(clearMessages())
             dispatch(resetGame())
             updateCachedData(() => response.result.data)
           })

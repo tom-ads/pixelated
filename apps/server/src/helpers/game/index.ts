@@ -35,3 +35,16 @@ export function setDrawer(party: PartyDocument): PartyMember[] {
 export function obscureWord(word: string) {
   return word.replace(/./g, "-");
 }
+
+export function calcGuesserScore(guessPos: number, prevScore: number): number {
+  const turnScore = guessPos > 0 ? 225 - 25 * guessPos : 0;
+  return prevScore + turnScore;
+}
+
+export function calcDrawerScore(
+  correctGuesses: number,
+  prevScore: number
+): number {
+  const turnScore = correctGuesses * 25;
+  return prevScore + turnScore;
+}

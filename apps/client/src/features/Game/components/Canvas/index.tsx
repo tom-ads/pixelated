@@ -22,7 +22,7 @@ export const canvasColours = {
   changing canvas width/heights, this effects how the drawers
   strokes are to their mouse position.
 */
-export const Canvas = (): JSX.Element => {
+export const Canvas = ({ disabled }: { disabled: boolean }): JSX.Element => {
   const dispatch = useDispatch()
 
   const [isDrawing, setIsDrawing] = useState(false)
@@ -79,7 +79,7 @@ export const Canvas = (): JSX.Element => {
   }
 
   const broadcastStroke = (localX: number, localY: number, dot?: boolean) => {
-    if (isDrawing || dot) {
+    if ((isDrawing || dot) && !disabled) {
       const prevX = dot ? localX : prevPos.current.prevX
       const prevY = dot ? localY : prevPos.current.prevY
       drawStroke(prevX, prevY, localX, localY)
