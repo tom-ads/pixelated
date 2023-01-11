@@ -16,6 +16,7 @@ import { CheckGuessDto } from "./dto";
 import { MessageType } from "../../Enum/MessageType";
 import { SerializedMessage } from "../../Model/Message";
 import { randomUUID } from "crypto";
+import { words } from "../../../words";
 
 export interface GameServiceContract {
   startTurn(
@@ -56,7 +57,7 @@ class GameService implements GameServiceContract {
         })
       );
 
-      game.turnWord = getRandomWord();
+      game.turnWord = getRandomWord(words);
       game = await this.partyService.updateParty({
         partyId,
         query: { turnWord: game.turnWord, members, isPlaying: true },

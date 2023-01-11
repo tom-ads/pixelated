@@ -4,7 +4,7 @@ export interface GameConfigContract {
 
 const envTurnDurationSeconds = process.env.TURN_DURATION_SECONDS;
 
-export const gameConfig: GameConfigContract = {
+export const GameConfig: GameConfigContract = {
   turnDurationSeconds: envTurnDurationSeconds
     ? parseInt(envTurnDurationSeconds, 10)
     : 90,

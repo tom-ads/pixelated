@@ -1,11 +1,12 @@
-import MongoStore from "connect-mongo";
 import { SessionOptions } from "express-session";
-import mongoose from "mongoose";
 import { v4 as uuidv4 } from "uuid";
+
+import dotenv from "dotenv";
+dotenv.config();
 
 export interface SessionConfig extends SessionOptions {}
 
-export const sessionConfig: SessionConfig = {
+export const SessionConfig: SessionConfig = {
   /* 
     Generate a unique session Id.
     default: Uses uuidv4 to generate unqiue session Id.
@@ -26,12 +27,6 @@ export const sessionConfig: SessionConfig = {
   },
 
   saveUninitialized: false,
-
-  store: MongoStore.create({
-    client: mongoose.connection.getClient(),
-    dbName: process.env.MONGO_DB_NAME,
-    collectionName: "sessions",
-  }),
 
   resave: false,
 };

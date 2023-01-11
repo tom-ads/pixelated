@@ -1,4 +1,4 @@
-import { Socket } from "socket.io";
+import { Server as IoServer, Socket } from "socket.io";
 import { socketResponse } from "../../helpers";
 import SocketError from "../Enum/SocketError";
 import SocketEvent from "../Enum/SocketEvent";
@@ -11,14 +11,14 @@ import {
   clearIntervalAsync,
   setIntervalAsync,
 } from "set-interval-async/dynamic";
-import { io } from "../../server";
 import { TimerType } from "../Enum/TimerType";
 import { hasNextDrawer, setupDrawer } from "../../helpers/game";
-import { gameConfig } from "../../config/game";
+import { GameConfig } from "../../config/game";
 import { awaiter } from "../../helpers/promise";
 
 export class GameChannel {
   constructor(
+    private readonly io: IoServer,
     private readonly chatService: ChatServiceContract,
     private readonly gameService: GameServiceContract,
     private readonly partyService: PartyServiceContract
@@ -53,7 +53,7 @@ export class GameChannel {
       await this.chatService.clearMessages(party.id);
 
       // Inform party members the game is starting
-      io.to(party.id).emit(
+      this.io.to(party.id).emit(
         SocketEvent.START_GAME,
         socketResponse(SocketStatus.SUCCESS, {
           data: undefined,
@@ -86,9 +86,9 @@ export class GameChannel {
         );
 
         // Turn countdown
-        let turnCounter = gameConfig.turnDurationSeconds;
+        let turnCounter = GameConfig.turnDurationSeconds;
         const turnCountdown = setInterval(() => {
-          io.in(party.id).emit(
+          this.io.in(party.id).emit(
             SocketEvent.GAME_TIMER,
             socketResponse(SocketStatus.SUCCESS, {
               data: { type: TimerType.TURN_TIMER, time: turnCounter },
@@ -100,7 +100,7 @@ export class GameChannel {
             clearInterval(turnCountdown);
           }
         }, 1000);
-        await awaiter(gameConfig.turnDurationSeconds * 1000 + 2000);
+        await awaiter(GameConfig.turnDurationSeconds * 1000 + 2000);
 
         updatedGame = await this.gameService.endTurn(party.id);
 

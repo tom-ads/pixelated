@@ -8,12 +8,11 @@ import { PartyServiceContract } from "../Service/PartyService";
 import { CreatePartyDto } from "../Service/PartyService/dto";
 import JoinPartyDto from "../Service/PartyService/dto/JoinParty";
 import { MessageType } from "../Enum/MessageType";
-import { io } from "../../server";
 
 export class PartyChannel {
   constructor(
-    private readonly partyService: PartyServiceContract,
-    private readonly chatService: ChatServiceContract
+    private readonly chatService: ChatServiceContract,
+    private readonly partyService: PartyServiceContract
   ) {}
 
   public async createParty(
