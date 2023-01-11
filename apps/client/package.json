@@ -12,6 +12,7 @@
     "lint:format": "prettier --loglevel warn --write \"./src/**/*.{ts,tsx}\" "
   },
   "dependencies": {
+    "@headlessui/react": "^1.7.7",
     "@hookform/resolvers": "^2.9.10",
     "@reduxjs/toolkit": "^1.9.1",
     "@types/node": "^18.11.18",

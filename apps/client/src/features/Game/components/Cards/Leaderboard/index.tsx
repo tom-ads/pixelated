@@ -8,7 +8,7 @@ export const LeaderboardCard = (): JSX.Element => {
         <div className="flex items-center justify-between flex-grow gap-3 mb-2">
           <h3 className="text-base">Leaderboard</h3>
         </div>
-        <LeaderboardList />
+        <LeaderboardList className="h-[205px]" />
       </div>
     </Card>
   )

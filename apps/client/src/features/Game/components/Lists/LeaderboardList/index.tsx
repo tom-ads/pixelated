@@ -1,45 +1,28 @@
 import { RootState } from '@/store'
+import classNames from 'classnames'
 import { useSelector } from 'react-redux'
 import { LeaderboardItem } from '../LeaderboardItem'
 
-export const LeaderboardList = (): JSX.Element => {
+type LeaderboardListProps = {
+  size?: 'sm' | 'xl'
+  className?: string
+}
+
+export const LeaderboardList = ({ size, className }: LeaderboardListProps): JSX.Element => {
   const { members } = useSelector((state: RootState) => ({
     members: state.party.members,
   }))
 
-  const data = [
-    {
-      username: 'PoloBear',
-      score: 700,
-    },
-    {
-      username: 'Jesspicatio',
-      score: 235,
-    },
-    {
-      username: 'Marley Mans',
-      score: 400,
-    },
-    {
-      username: 'Lerow melas',
-      score: 400,
-    },
-    {
-      username: 'Bob marley',
-      score: 400,
-    },
-    {
-      username: 'Hairy mans',
-      score: 645,
-    },
-  ]
-
   const sortedMembers = [...(members ?? [])]?.sort((a, b) => b.score - a.score)
 
   return (
-    <ul className="divide-cyan-70 divide-y divide-dashed h-[267px]">
+    <ul className={classNames('divide-cyan-70 divide-y divide-dashed', className)}>
       {sortedMembers?.map((member, idx) => (
-        <LeaderboardItem key={member.username} value={{ ...member, position: idx + 1 }} />
+        <LeaderboardItem
+          key={member.username}
+          size={size}
+          value={{ ...member, position: idx + 1 }}
+        />
       ))}
     </ul>
   )

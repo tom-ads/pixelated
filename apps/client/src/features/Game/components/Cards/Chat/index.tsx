@@ -10,7 +10,7 @@ export const ChatCard = (): JSX.Element => {
 
   return (
     <Card className="flex-grow">
-      <ChatList offset={800} className="max-h-[330px]">
+      <ChatList offset={800} className="max-h-[390px]">
         {messages?.map((message) => (
           <ChatItem size="sm" key={message.id} value={message} />
         ))}

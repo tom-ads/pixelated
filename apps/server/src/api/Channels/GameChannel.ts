@@ -13,17 +13,15 @@ import {
 } from "set-interval-async/dynamic";
 import { io } from "../../server";
 import { TimerType } from "../Enum/TimerType";
-import { hasNextDrawer, obscureWord, setupDrawer } from "../../helpers/game";
+import { hasNextDrawer, setupDrawer } from "../../helpers/game";
 import { gameConfig } from "../../config/game";
-import { IMessage } from "../Model/Message";
-import { MessageType } from "../Enum/MessageType";
 import { awaiter } from "../../helpers/promise";
 
 export class GameChannel {
   constructor(
-    private readonly partyService: PartyServiceContract,
     private readonly chatService: ChatServiceContract,
-    private readonly gameService: GameServiceContract // private readonly io: Server
+    private readonly gameService: GameServiceContract,
+    private readonly partyService: PartyServiceContract
   ) {}
 
   public async startGame(socket: Socket, data: StartGameDto, callback: any) {
@@ -52,7 +50,6 @@ export class GameChannel {
     }
 
     try {
-      // Clear party chat
       await this.chatService.clearMessages(party.id);
 
       // Inform party members the game is starting
@@ -81,19 +78,16 @@ export class GameChannel {
           }
         }
 
-        const { members } = setupDrawer(
-          updatedGame!.members,
-          updatedGame!.round
-        );
-
+        // Start next turn in round
+        const members = setupDrawer(updatedGame!.members, updatedGame!.round);
         updatedGame = await this.gameService.startTurn(
           updatedGame?.id,
           members
         );
 
-        // Turn countdown timer
+        // Turn countdown
         let turnCounter = gameConfig.turnDurationSeconds;
-        const turnTimer = setInterval(() => {
+        const turnCountdown = setInterval(() => {
           io.in(party.id).emit(
             SocketEvent.GAME_TIMER,
             socketResponse(SocketStatus.SUCCESS, {
@@ -103,7 +97,7 @@ export class GameChannel {
 
           turnCounter--;
           if (turnCounter < 0) {
-            clearInterval(turnTimer);
+            clearInterval(turnCountdown);
           }
         }, 1000);
         await awaiter(gameConfig.turnDurationSeconds * 1000 + 2000);

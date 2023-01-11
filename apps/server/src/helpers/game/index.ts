@@ -18,7 +18,7 @@ export function getRandomWord(excluded?: string[]) {
 export function setupDrawer(
   members: PartyMember[],
   round: number
-): { drawer: PartyMember; members: PartyMember[] } {
+): PartyMember[] {
   let drawerFound = false;
   members = members.map((member) => {
     if (member.isDrawer) {
@@ -32,10 +32,7 @@ export function setupDrawer(
     return member;
   });
 
-  return {
-    drawer: members.find((member) => member.isDrawer)!,
-    members,
-  };
+  return members;
 }
 
 export function hasNextDrawer(

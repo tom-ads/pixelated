@@ -68,6 +68,9 @@ const gameEndpoints = appApi.injectEndpoints({
           // Cleanup
           await cacheEntryRemoved
           appSocket.off(SocketEvent.START_TURN)
+          appSocket.off(SocketEvent.END_TURN)
+          appSocket.off(SocketEvent.END_GAME)
+          appSocket.off(SocketEvent.GAME_TIMER)
         } catch {
           console.log('throwing cache')
         }

@@ -14,7 +14,8 @@ import { socketResponse } from "../../../helpers";
 import SocketStatus from "../../Enum/SocketStatus";
 import { CheckGuessDto } from "./dto";
 import { MessageType } from "../../Enum/MessageType";
-import { IMessage } from "../../Model/Message";
+import { SerializedMessage } from "../../Model/Message";
+import { randomUUID } from "crypto";
 
 export interface GameServiceContract {
   startTurn(
@@ -48,10 +49,10 @@ class GameService implements GameServiceContract {
         SocketEvent.RECEIVE_MESSAGE,
         socketResponse(SocketStatus.SUCCESS, {
           data: {
-            partyId: partyId,
+            id: randomUUID(),
             sender: MessageType.SYSTEM_MESSAGE,
             message: `Turn starting. ${drawer?.username} is the drawer.`,
-          } satisfies IMessage,
+          } satisfies SerializedMessage,
         })
       );
 
@@ -94,12 +95,13 @@ class GameService implements GameServiceContract {
     let party = await this.partyService.findById(partyId);
     if (party) {
       // Calc turn scores.
-      party.members.map((member) => {
-        member.score = member.isDrawer
+      party.members = party.members.map((member) => ({
+        ...member,
+        guessedPos: 0,
+        score: member.isDrawer
           ? calcDrawerScore(party!.correctGuesses, member.score)
-          : calcGuesserScore(member.guessedPos, member.score);
-        return member;
-      });
+          : calcGuesserScore(member.guessedPos, member.score),
+      }));
 
       this.io.in(partyId).emit(
         SocketEvent.END_TURN,
@@ -118,10 +120,10 @@ class GameService implements GameServiceContract {
         SocketEvent.RECEIVE_MESSAGE,
         socketResponse(SocketStatus.SUCCESS, {
           data: {
-            partyId: party.id,
+            id: randomUUID(),
             sender: MessageType.SYSTEM_MESSAGE,
             message: `${drawer?.username} turn has finished`,
-          } satisfies IMessage,
+          } satisfies SerializedMessage,
         })
       );
 
@@ -131,15 +133,13 @@ class GameService implements GameServiceContract {
         }) for party ${party.id}`
       );
 
-      // Reset turn word and guesses in party
       party = await Party.findByIdAndUpdate(
         { _id: partyId },
         {
           $set: {
             turnWord: null,
             correctGuesses: 0,
-            "members.$[].guessedPos": 0,
-            "members.$[].isDrawer": false,
+            members: party.members,
           },
         },
         { new: true }
@@ -158,10 +158,10 @@ class GameService implements GameServiceContract {
       SocketEvent.RECEIVE_MESSAGE,
       socketResponse(SocketStatus.SUCCESS, {
         data: {
-          partyId: partyId,
+          id: randomUUID(),
           sender: MessageType.SYSTEM_MESSAGE,
           message: `Round ${currentRound} over.`,
-        } satisfies IMessage,
+        } satisfies SerializedMessage,
       })
     );
 
@@ -181,17 +181,11 @@ class GameService implements GameServiceContract {
 
     // Check if there is an active game and a word for the current turn
     if (!party || !party?.isPlaying || !party.turnWord) {
-      console.log("no party", party, party?.isPlaying, party?.turnWord);
       return false;
     }
 
     // check guess is correct word in turn
     if (party.turnWord.toLowerCase() !== dto.guess.toLowerCase()) {
-      console.log(
-        "no guess",
-        party.turnWord.toLowerCase(),
-        dto.guess.toLowerCase()
-      );
       return false;
     }
 
@@ -201,12 +195,6 @@ class GameService implements GameServiceContract {
 
     // prevent guesser from guessing again
     if (!guesser || guesser?.guessedPos || guesser?.isDrawer) {
-      console.log(
-        "no guesser",
-        !guesser,
-        guesser?.guessedPos,
-        guesser?.isDrawer
-      );
       return false;
     }
 
