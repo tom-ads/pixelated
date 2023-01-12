@@ -1,16 +1,23 @@
 import request from "supertest";
-import Party from "../../../api/Model/Party";
-import User from "../../../api/Model/User";
+import User, { UserDocument } from "../../../api/Model/User";
 import { app } from "./../../../server";
+import {
+  createPartyFactory,
+  createPartyMemberFactory,
+  createUserFactory,
+} from "./../../../database/factories";
 
 describe("Auth /login", () => {
-  it("allows an existing user to login into their account", async () => {
-    await User.create({
+  let authUser: UserDocument;
+
+  beforeEach(async () => {
+    authUser = await createUserFactory({
       username: "bob-marley",
       email: "bob.marley@gmail.com",
-      password: "testPassword123!",
     });
+  });
 
+  it("allows an existing user to login into their account", async () => {
     const payload = {
       username: "bob-marley",
       password: "testPassword123!",
@@ -28,12 +35,6 @@ describe("Auth /login", () => {
   });
 
   it("prevents user with incorrect username from logging in", async () => {
-    await User.create({
-      username: "bob-marley",
-      email: "bob.marley@gmail.com",
-      password: "testPassword123!",
-    });
-
     const payload = {
       username: "incorrect-user",
       password: "testPassword123!",
@@ -48,12 +49,6 @@ describe("Auth /login", () => {
   });
 
   it("prevents user with incorrect password from logging in", async () => {
-    await User.create({
-      username: "bob-marley",
-      email: "bob.marley@gmail.com",
-      password: "testPassword123!",
-    });
-
     const payload = {
       username: "bob-marley",
       password: "incorrectPassword123!",
@@ -68,34 +63,15 @@ describe("Auth /login", () => {
   });
 
   it("allows an existing user to login, and returns party they are still in", async () => {
-    await User.create({
-      username: "bob-marley",
-      email: "bob.marley@gmail.com",
-      password: "testPassword123!",
+    const partyMember = createPartyMemberFactory({
+      username: authUser.username,
     });
+    const party = await createPartyFactory({ members: [partyMember] });
 
     const payload = {
       username: "bob-marley",
       password: "testPassword123!",
     };
-
-    const party = await Party.create({
-      name: "test-party",
-      code: "123",
-      isPlaying: false,
-      correctGuesses: 0,
-      round: 1,
-      members: [
-        {
-          username: payload.username,
-          isOwner: true,
-          isDrawer: false,
-          guessedPos: 0,
-          rounds: 0,
-          score: 0,
-        },
-      ],
-    });
 
     const response = await request(app).post("/auth/login").send(payload);
 

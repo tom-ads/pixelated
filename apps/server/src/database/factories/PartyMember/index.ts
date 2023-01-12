@@ -1,7 +1,7 @@
 import { PartyMember } from "../../../api/Model/Party";
 import { faker } from "@faker-js/faker";
 
-export function PartyMemberFactory(
+export function createPartyMemberFactory(
   override?: Partial<PartyMember>
 ): PartyMember {
   return Object.assign(
