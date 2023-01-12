@@ -2,14 +2,14 @@ import { transformResponse } from '@/helpers/query'
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'
 import { io, Socket } from 'socket.io-client'
 
-let socket: Socket
+export let appSocket: Socket
 export function getSocket() {
-  if (!socket) {
-    socket = io(import.meta.env.VITE_PIXELATED_API_BASE_URL, {
+  if (!appSocket) {
+    appSocket = io(import.meta.env.VITE_PIXELATED_API_BASE_URL, {
       withCredentials: true,
     })
   }
-  return socket
+  return appSocket
 }
 
 /* 

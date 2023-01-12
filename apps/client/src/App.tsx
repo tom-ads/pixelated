@@ -1,6 +1,7 @@
 import { ReactNode, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
+import { appSocket, getSocket } from './api'
 import { Loader } from './components'
 import { useGetSessionQuery } from './features/Auth'
 import { RootState } from './store'
@@ -28,6 +29,11 @@ const App = ({ children }: AppProps): JSX.Element => {
       dispatch(setAuth(session.user))
       if (session.party) {
         dispatch(setParty(session.party))
+      }
+
+      // Reconnect socket
+      if (!appSocket?.connected) {
+        getSocket()
       }
     }
   }, [session])
