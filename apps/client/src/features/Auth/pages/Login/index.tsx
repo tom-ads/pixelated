@@ -1,8 +1,10 @@
+import { getSocket } from '@/api'
 import { FormInput, Form, FormControl, Button, InlineLink } from '@/components'
 import FormErrorMessage from '@/components/Forms/ErrorMessage'
 import { FormPasswordInput } from '@/components/Forms/PasswordInput'
 import { RootState } from '@/store'
 import { setAuth } from '@/store/slices/auth'
+import { setParty } from '@/store/slices/party'
 import { useDispatch, useSelector } from 'react-redux'
 import { Navigate, useLocation } from 'react-router-dom'
 import { z } from 'zod'
@@ -31,7 +33,13 @@ export const LoginPage = (): JSX.Element => {
   const handleSubmit = async (data: FormFields) => {
     await triggerLogin(data)
       .unwrap()
-      .then((res) => dispatch(setAuth(res.user)))
+      .then((res) => {
+        dispatch(setAuth(res.user))
+        if (res?.party) {
+          dispatch(setParty(res.party))
+        }
+        getSocket()
+      })
       // Error is handled with didLoginError
       // eslint-disable-next-line @typescript-eslint/no-empty-function
       .catch((err) => {})

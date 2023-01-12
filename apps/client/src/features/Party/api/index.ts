@@ -6,7 +6,7 @@ import { leaveParty, setParty, startGame } from '@/store/slices/party'
 import { Message } from '@/types'
 import Party from '@/types/Models/Party'
 import { BaseQueryApi, FetchBaseQueryError } from '@reduxjs/toolkit/dist/query'
-import appApi, { appSockedConnected, appSocket } from 'api'
+import appApi, { getSocket } from 'api'
 import { CreatePartyRequest, JoinPartyRequest } from './types/requests'
 import { CreatePartyResponse, GetPartyResponse, JoinPartyResponse } from './types/response'
 
@@ -14,7 +14,7 @@ const partyEndpoints = appApi.injectEndpoints({
   endpoints: (build) => ({
     createParty: build.mutation<CreatePartyResponse, CreatePartyRequest>({
       queryFn: async (data: CreatePartyRequest, api: BaseQueryApi) => {
-        await appSockedConnected
+        const appSocket = getSocket()
 
         return new Promise((resolve) => {
           appSocket.emit(SocketEvent.CREATE_PARTY, data, (response: SocketResponse<Party>) => {
@@ -32,7 +32,7 @@ const partyEndpoints = appApi.injectEndpoints({
 
     joinParty: build.mutation<JoinPartyResponse, JoinPartyRequest>({
       queryFn: async (data: JoinPartyRequest, api: BaseQueryApi) => {
-        await appSockedConnected
+        const appSocket = getSocket()
 
         return new Promise((resolve) => {
           appSocket.emit(
@@ -55,7 +55,7 @@ const partyEndpoints = appApi.injectEndpoints({
 
     leaveParty: build.mutation<void, void>({
       queryFn: async (_, api: BaseQueryApi) => {
-        await appSockedConnected
+        const appSocket = getSocket()
 
         return new Promise((resolve) => {
           appSocket.emit(SocketEvent.LEAVE_PARTY, (response: SocketResponse<void>) => {
@@ -83,7 +83,7 @@ const partyEndpoints = appApi.injectEndpoints({
           await cacheDataLoaded
 
           // Get or open a web socket connection
-          await appSockedConnected
+          const appSocket = getSocket()
 
           // Receive party & cache it
           appSocket.on(SocketEvent.USER_JOINED, (response: SocketResponse<GetPartyResponse>) => {

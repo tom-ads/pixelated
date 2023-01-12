@@ -5,7 +5,7 @@ import SocketStatus from '@/enums/SocketStatus'
 import { appendMessage } from '@/store/slices/chat'
 import { Message } from '@/types'
 import { BaseQueryApi, FetchBaseQueryError } from '@reduxjs/toolkit/dist/query'
-import appApi, { appSockedConnected, appSocket } from 'api'
+import appApi, { getSocket } from 'api'
 import { GetMessagesRequest, SendMessageRequest } from './types/requests'
 import { GetMessagesResponse, SendMessageResponse } from './types/response'
 import { v4 as uuidv4 } from 'uuid'
@@ -14,7 +14,7 @@ const chatEndpoints = appApi.injectEndpoints({
   endpoints: (build) => ({
     sendMessage: build.mutation<SendMessageResponse, SendMessageRequest>({
       queryFn: async (data: SendMessageRequest, api: BaseQueryApi) => {
-        await appSockedConnected
+        const appSocket = getSocket()
 
         return new Promise((resolve) => {
           appSocket.emit(SocketEvent.SEND_MESSAGE, data, (response: SocketResponse<Message>) => {
@@ -52,7 +52,7 @@ const chatEndpoints = appApi.injectEndpoints({
           await cacheDataLoaded
 
           // Get or open a web socket connection
-          await appSockedConnected
+          const appSocket = getSocket()
 
           appSocket.on(SocketEvent.RECEIVE_MESSAGE, (response: SocketResponse<Message>) => {
             dispatch(appendMessage(response.result.data))

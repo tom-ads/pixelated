@@ -53,8 +53,11 @@ class AuthController {
       });
     }
 
+    const party = await this.partyService.findByUsername(user!.username);
+
     return response.status(200).json({
       user: user.serialize(),
+      party: party?.serialize(),
     });
   };
 

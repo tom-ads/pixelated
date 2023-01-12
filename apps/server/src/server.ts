@@ -65,6 +65,7 @@ import { GameDrawingDto, StartGameDto } from "./api/Service/GameService/dto";
     io.use(async (socket, next) => {
       const session = socket.request.session;
       if (!session || !session?.authenticated) {
+        socket.disconnect(true);
         return next(new Error("Unauthorized"));
       }
 
@@ -73,7 +74,6 @@ import { GameDrawingDto, StartGameDto } from "./api/Service/GameService/dto";
         .resolve("userService")
         .findById(session.uid);
       socket.request.session.user = user;
-
       next();
     });
 
@@ -83,6 +83,7 @@ import { GameDrawingDto, StartGameDto } from "./api/Service/GameService/dto";
       socket.on(
         SocketEvent.CREATE_PARTY,
         async (data: CreatePartyDto, callback) => {
+          console.log("hit me");
           await container
             .resolve("partyChannel")
             .createParty(socket, data, callback);
@@ -96,6 +97,7 @@ import { GameDrawingDto, StartGameDto } from "./api/Service/GameService/dto";
       socket.on(
         SocketEvent.JOIN_PARTY,
         async (data: JoinPartyDto, callback) => {
+          console.log("joining party...");
           await container
             .resolve("partyChannel")
             .joinParty(socket, data, callback);
@@ -131,6 +133,7 @@ import { GameDrawingDto, StartGameDto } from "./api/Service/GameService/dto";
       });
 
       socket.on("disconnect", async () => {
+        console.log(socket.request.session.user.username + " disconnected");
         /* 
           In the future, we could check if the user was in an 
           active game and remove them from it. We'd need to end the game

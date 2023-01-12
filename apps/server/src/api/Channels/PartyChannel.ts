@@ -1,5 +1,5 @@
 import { Socket } from "socket.io";
-import { socketResponse } from "../../helpers";
+import { awaiter, socketResponse } from "../../helpers";
 import SocketError from "../Enum/SocketError";
 import SocketEvent from "../Enum/SocketEvent";
 import SocketStatus from "../Enum/SocketStatus";
@@ -30,6 +30,8 @@ export class PartyChannel {
       });
 
       socket.join(createdParty.id);
+
+      await awaiter(1000);
 
       callback(
         socketResponse(SocketStatus.SUCCESS, {

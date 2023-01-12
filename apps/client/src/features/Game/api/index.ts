@@ -6,7 +6,7 @@ import { startTurn, resetGame, TimerState, setTimer, endTurn } from '@/store/sli
 import { setParty } from '@/store/slices/party'
 import Party from '@/types/Models/Party'
 import { FetchBaseQueryError } from '@reduxjs/toolkit/dist/query'
-import appApi, { appSockedConnected, appSocket } from 'api'
+import appApi, { getSocket } from 'api'
 import { DrawingStroke } from '../types'
 import { SendDrawingRequest } from './types/requests'
 
@@ -14,7 +14,7 @@ const gameEndpoints = appApi.injectEndpoints({
   endpoints: (build) => ({
     startGame: build.mutation<void, string>({
       queryFn: async (data: string) => {
-        await appSockedConnected
+        const appSocket = getSocket()
 
         return new Promise((resolve) => {
           appSocket.emit(SocketEvent.START_GAME, data, (response: SocketResponse<Party>) => {
@@ -39,7 +39,7 @@ const gameEndpoints = appApi.injectEndpoints({
           await cacheDataLoaded
 
           // Get or open a web socket connection
-          await appSockedConnected
+          const appSocket = getSocket()
 
           appSocket.on(SocketEvent.START_TURN, (response: SocketResponse<Party>) => {
             const drawer = response.result.data.members?.find((member) => member.isDrawer)
@@ -79,7 +79,7 @@ const gameEndpoints = appApi.injectEndpoints({
 
     sendDrawing: build.mutation<void, SendDrawingRequest>({
       queryFn: async (data: SendDrawingRequest) => {
-        await appSockedConnected
+        const appSocket = getSocket()
 
         return new Promise((resolve) => {
           appSocket.emit(SocketEvent.GAME_DRAWING, data)
@@ -96,7 +96,7 @@ const gameEndpoints = appApi.injectEndpoints({
           await cacheDataLoaded
 
           // Get or open a web socket connection
-          await appSockedConnected
+          const appSocket = getSocket()
 
           appSocket.on(SocketEvent.GAME_DRAWING, (response: SocketResponse<DrawingStroke>) => {
             updateCachedData(() => response.result.data)
