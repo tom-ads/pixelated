@@ -51,8 +51,7 @@ export class GameChannel {
           } satisfies SerializedMessage,
         })
       );
-      callback(socketResponse(SocketStatus.ERROR, { data: undefined }));
-      return;
+      return callback(socketResponse(SocketStatus.ERROR, { data: undefined }));
     }
 
     try {

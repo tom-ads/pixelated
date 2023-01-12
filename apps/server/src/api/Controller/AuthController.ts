@@ -27,17 +27,15 @@ class AuthController {
     if (doesUserExist) {
       return response
         .status(400)
-        .json({ email: "Username or email already exists" });
+        .json({ message: "Username or email already exists" });
     }
 
     try {
       const createdUser = await this.userService.registerUser(payload);
-
       await this.sessionService.regenSession(request.session);
       request.session.uid = createdUser.id;
       request.session.authenticated = true;
       await this.sessionService.saveSession(request.session);
-
       return response.status(201).json(createdUser.serialize());
     } catch (error) {
       next(error);

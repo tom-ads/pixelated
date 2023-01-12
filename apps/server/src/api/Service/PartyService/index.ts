@@ -46,6 +46,7 @@ export class PartyService implements PartyServiceContract {
 
     return validCode;
   }
+
   public async createParty(dto: CreatePartyDto): Promise<PartyDocument> {
     const code = randomInt(10000000, 99999999);
 

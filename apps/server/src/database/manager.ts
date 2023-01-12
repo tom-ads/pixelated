@@ -1,15 +1,16 @@
-import mongoose, { ConnectOptions } from "mongoose";
+import mongoose from "mongoose";
+import { DatabaseConfig } from "../config/database";
 
 class MongoManager {
-  constructor(private connectionString: string) {}
-
   public async createConnection() {
-    const options: ConnectOptions = {
-      dbName: process.env.MONGO_DB_NAME || "pixelated",
-    };
+    if (!DatabaseConfig.connectionUrl) {
+      throw new Error("Missing Mongo Connection URL");
+    }
 
     try {
-      await mongoose.connect(this.connectionString, options);
+      await mongoose.connect(DatabaseConfig.connectionUrl, {
+        dbName: DatabaseConfig.dbName,
+      });
       console.log("[Database] Connection established");
     } catch (err) {
       console.error(err);
