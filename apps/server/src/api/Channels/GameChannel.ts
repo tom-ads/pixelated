@@ -15,6 +15,9 @@ import { TimerType } from "../Enum/TimerType";
 import { hasNextDrawer, setupDrawer } from "../../helpers/game";
 import { GameConfig } from "../../config/game";
 import { awaiter } from "../../helpers/promise";
+import { SerializedMessage } from "../Model/Message";
+import { randomUUID } from "crypto";
+import { MessageType } from "../Enum/MessageType";
 
 export class GameChannel {
   constructor(
@@ -38,15 +41,18 @@ export class GameChannel {
     }
 
     if (party.members.length < 2) {
-      // Send message in chat instead... but only to sender
-      // return callback(
-      //   socketResponse(SocketStatus.ERROR, {
-      //     error: {
-      //       type: SocketError.MEMBER_MIN_LIMIT,
-      //       message: "Party must have atleast 2 members to start game!",
-      //     },
-      //   })
-      // );
+      socket.emit(
+        SocketEvent.RECEIVE_MESSAGE,
+        socketResponse(SocketStatus.SUCCESS, {
+          data: {
+            id: randomUUID(),
+            sender: MessageType.SYSTEM_MESSAGE,
+            message: "Party must have atleast 2 members to start game!",
+          } satisfies SerializedMessage,
+        })
+      );
+      callback(socketResponse(SocketStatus.ERROR, { data: undefined }));
+      return;
     }
 
     try {
