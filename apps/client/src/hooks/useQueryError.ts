@@ -3,7 +3,7 @@ import { FetchBaseQueryError } from '@reduxjs/toolkit/dist/query'
 import { useEffect } from 'react'
 import { FieldValues, Path, UseFormSetError } from 'react-hook-form'
 
-export function isFetchBaseQueryError(error: unknown): error is FetchBaseQueryError {
+function isFetchBaseQueryError(error: unknown): error is FetchBaseQueryError {
   return typeof error === 'object' && error != null && 'status' in error
 }
 

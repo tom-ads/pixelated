@@ -49,29 +49,12 @@ export const Form = <TFormValues extends FieldValues, ValidationSchema extends Z
 
   useQueryError<TFormValues>(methods.setError, queryError)
 
-  /*
-    Using watch() in useEffect isn't the most optimal solution,
-    can be improved in the future.
-  */
   useEffect(() => {
     if (onChange) {
-      /* 
-        We need to deep clone the form state as passing it to redux
-        will cause the values to be readonly and throw.
-
-        Cloning will create a completely new reference.
-      */
       onChange(cloneDeep(methods.getValues()), methods)
     }
   }, [methods.watch(), onChange])
 
-  /* 
-    When defaultValues is set initially, there might be an async operation
-    awaiting i.e network request. When the network request returns with nested
-    data i.e objects and arrays there is no way to update defaultValues for
-    those fields. So, we need to manually check for these changes and reset the
-    form so it accurately represents the defaultValues.
-  */
   useEffect(() => {
     if (!isEqual(methods.formState.defaultValues, defaultValues)) {
       methods.reset(defaultValues)

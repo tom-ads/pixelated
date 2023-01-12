@@ -16,18 +16,36 @@ class AuthController {
     this.sessionService = sessionService;
   }
 
-  register = async (request: Request, response: Response) => {
+  register = async (
+    request: Request,
+    response: Response,
+    next: NextFunction
+  ) => {
     const payload = await request.validate(RegisterValidator);
 
     const doesUserExist = await this.userService.exists(payload);
     if (doesUserExist) {
       return response
         .status(400)
-        .json({ message: "Username or email already exists" });
+        .json({ email: "Username or email already exists" });
     }
-    const createdUser = await this.userService.registerUser(payload);
 
-    return response.status(201).json({ message: "message" });
+    try {
+      const createdUser = await this.userService.registerUser(payload);
+
+      await this.sessionService.regenSession(request.session);
+      request.session.uid = createdUser.id;
+      request.session.authenticated = true;
+      await this.sessionService.saveSession(request.session);
+
+      return response.status(201).json(createdUser.serialize());
+    } catch (error) {
+      next(error);
+      return response.status(500).json({
+        message:
+          "We cannot process your request right now, please try again later.",
+      });
+    }
   };
 
   login = async (request: Request, response: Response, next: NextFunction) => {
