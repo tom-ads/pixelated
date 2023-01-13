@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from "uuid";
 import MongoStore from "connect-mongo";
 import mongoose from "mongoose";
-import { SessionOptions } from "express-session";
 
+// @ts-nocheck
 export const SessionConfig = {
   /* 
     Generate a unique session Id.
@@ -24,6 +24,12 @@ export const SessionConfig = {
   },
 
   saveUninitialized: false,
+
+  store: MongoStore.create({
+    client: mongoose.connection.getClient(),
+    dbName: process.env.MONGO_DB_NAME,
+    collectionName: "sessions",
+  }),
 
   resave: false,
 };
