@@ -9,8 +9,8 @@ export async function createUserFactory(
   return await User.create(
     Object.assign(
       {
-        username: faker.internet.userName,
-        email: faker.internet.email,
+        username: faker.internet.userName(),
+        email: faker.internet.email(),
         password: "testPassword123!",
       },
       override

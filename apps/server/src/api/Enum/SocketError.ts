@@ -6,6 +6,7 @@ enum SocketError {
   MEMBER_MIN_LIMIT = "MEMBER_MIN_LIMIT",
   MESSAGE_FAILED = "MESSAGE_FAILED",
   GAME_FAILED = "GAME_FAILED",
+  GAME_STARTED = "GAME_STARTED",
 }
 
 export default SocketError;

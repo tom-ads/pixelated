@@ -25,11 +25,11 @@ export const ChatInput = ({
   size = 'md',
   block = false,
 }: ChatInputProps): JSX.Element => {
-  const [sendMessage, { isLoading: isSending }] = useSendMessageMutation()
-
   const { partyId } = useSelector((state: RootState) => ({
     partyId: state.party.id,
   }))
+
+  const [sendMessage, { isLoading: isSending }] = useSendMessageMutation()
 
   const { isFetching } = useGetMessagesQuery(partyId!, { skip: !partyId })
 

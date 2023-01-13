@@ -37,6 +37,10 @@ export const io = new Server(server, {
   },
 });
 
+server.on("error", (err) => {
+  console.log("[Api] Error occured: " + err);
+});
+
 // Configure express
 app.use(express.json());
 app.use(validationMiddleware);

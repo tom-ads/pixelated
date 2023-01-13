@@ -96,6 +96,18 @@ export class PartyChannel {
       );
     }
 
+    // Party is in an active game
+    if (party.isPlaying) {
+      return callback(
+        socketResponse(SocketStatus.ERROR, {
+          error: {
+            type: SocketError.GAME_STARTED,
+            message: "Party is currently in an active game",
+          },
+        })
+      );
+    }
+
     try {
       // Add party member to party document
       const updatedParty = await this.partyService.addPartyMember({
@@ -242,7 +254,6 @@ export class PartyChannel {
       });
 
       // Set socketId to party member
-
       await this.partyService.updatePartyMember({
         partyId: party.id,
         username: session.user.username,

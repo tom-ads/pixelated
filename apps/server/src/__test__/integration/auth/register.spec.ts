@@ -1,8 +1,13 @@
+import mongoose from "mongoose";
 import request from "supertest";
 import User from "../../../api/Model/User";
-import { app } from "./../../../server";
+import { app } from "../../../server";
 
 describe("Auth /register", () => {
+  afterEach(async () => {
+    await mongoose.connection.dropDatabase();
+  });
+
   it("allows a user to register with their details", async () => {
     const payload = {
       username: "bob-marley",
@@ -13,7 +18,7 @@ describe("Auth /register", () => {
 
     const response = await request(app).post("/auth/register").send(payload);
 
-    expect(response.statusCode).toEqual(201);
+    expect(response.statusCode).toBe(201);
     expect(response.body).toEqual(
       expect.objectContaining({
         username: payload.username,
@@ -27,7 +32,6 @@ describe("Auth /register", () => {
       username: "bob-marley",
       email: "bob.marley@email.com",
       password: "testPassword123!",
-      password_confirmation: "testPassword123!",
     });
     const payload = {
       username: "bob-marley",
@@ -38,7 +42,7 @@ describe("Auth /register", () => {
 
     const response = await request(app).post("/auth/register").send(payload);
 
-    expect(response.statusCode).toEqual(400);
+    expect(response.statusCode).toBe(400);
     expect(response.body).toEqual({
       message: "Username or email already exists",
     });
@@ -49,7 +53,6 @@ describe("Auth /register", () => {
       username: "bob-marley",
       email: "bob.marley@email.com",
       password: "testPassword123!",
-      password_confirmation: "testPassword123!",
     });
     const payload = {
       username: "diff-username",
@@ -60,7 +63,7 @@ describe("Auth /register", () => {
 
     const response = await request(app).post("/auth/register").send(payload);
 
-    expect(response.statusCode).toEqual(400);
+    expect(response.statusCode).toBe(400);
     expect(response.body).toEqual({
       message: "Username or email already exists",
     });
