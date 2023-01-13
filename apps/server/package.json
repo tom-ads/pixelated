@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "nodemon ./src/server.ts",
+    "build": "yarn build",
     "test": "cross-env NODE_ENV=test MONGO_DB_NAME=pixelated_test jest",
     "test:unit": "cross-env NODE_ENV=test MONGO_DB_NAME=pixelated_test jest --testPathPattern=src/__test__/unit",
     "test:integration": "cross-env NODE_ENV=test MONGO_DB_NAME=pixelated_test jest --testPathPattern=src/__test__/integration"
