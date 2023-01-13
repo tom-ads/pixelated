@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "dev": "nodemon ./src/server.ts",
+    "dev": "ts-node ./src/server.ts",
+    "build": "tsc --build",
+    "serve": "yarn build && node build/src/server.js",
     "test": "cross-env NODE_ENV=test MONGO_DB_NAME=pixelated_test jest",
     "test:unit": "cross-env NODE_ENV=test MONGO_DB_NAME=pixelated_test jest --testPathPattern=src/__test__/unit",
     "test:integration": "cross-env NODE_ENV=test MONGO_DB_NAME=pixelated_test jest --testPathPattern=src/__test__/integration"
@@ -23,6 +25,7 @@
     "mongoose": "^6.8.1",
     "set-interval-async": "^3.0.3",
     "socket.io": "^4.5.4",
+    "ts-node": "^10.9.1",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
