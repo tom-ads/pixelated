@@ -31,14 +31,20 @@ export const app: Express = express();
 const server = http.createServer(app);
 export const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: process.env.CLIENT_HOST,
     credentials: true,
   },
 });
 
-server.on("error", (err) => {
-  console.log("[Api] Error occured: " + err);
-});
+if (process.env.NODE_ENV !== "test") {
+  server.listen(process.env.APP_PORT, () =>
+    console.log(`[API] Listening on port ${process.env.APP_PORT}`)
+  );
+
+  server.on("error", (err) => {
+    console.log(`[API] Error occured: ${err}`);
+  });
+}
 
 // Configure express
 app.use(express.json());
