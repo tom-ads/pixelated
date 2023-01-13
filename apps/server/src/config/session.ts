@@ -1,14 +1,9 @@
-import { SessionOptions } from "express-session";
 import { v4 as uuidv4 } from "uuid";
-
-import dotenv from "dotenv";
 import MongoStore from "connect-mongo";
 import mongoose from "mongoose";
-dotenv.config();
+import { SessionOptions } from "express-session";
 
-export interface SessionConfig extends SessionOptions {}
-
-export const SessionConfig: SessionConfig = {
+export const SessionConfig: Partial<SessionOptions> = {
   /* 
     Generate a unique session Id.
     default: Uses uuidv4 to generate unqiue session Id.
