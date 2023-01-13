@@ -56,6 +56,8 @@ jobs:
         uses: supercharge/mongodb-github-action@1.8.0
         with:
           mongodb-version: "latest"
+          mongodb-username: root
+          mongodb-password: password
           mongodb-db: pixelated_test
 
       - name: Test Code
