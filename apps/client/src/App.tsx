@@ -23,7 +23,6 @@ const App = ({ children }: AppProps): JSX.Element => {
 
   const { data: session, isLoading: loadingSession } = useGetSessionQuery()
 
-  // Set authenticated, if there is an active session
   useEffect(() => {
     if (session) {
       dispatch(setAuth(session.user))
