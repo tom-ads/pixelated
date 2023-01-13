@@ -2,6 +2,8 @@ import { SessionOptions } from "express-session";
 import { v4 as uuidv4 } from "uuid";
 
 import dotenv from "dotenv";
+import MongoStore from "connect-mongo";
+import mongoose from "mongoose";
 dotenv.config();
 
 export interface SessionConfig extends SessionOptions {}
@@ -27,6 +29,12 @@ export const SessionConfig: SessionConfig = {
   },
 
   saveUninitialized: false,
+
+  store: MongoStore.create({
+    client: mongoose.connection.getClient(),
+    dbName: process.env.MONGO_DB_NAME,
+    collectionName: "sessions",
+  }),
 
   resave: false,
 };
