@@ -27,6 +27,7 @@ import { GameChannel } from "./api/Channels/GameChannel";
 import { UserDocument } from "./api/Model/User";
 import MongoStore from "connect-mongo";
 import mongoose from "mongoose";
+import { v4 as uuidv4 } from "uuid";
 
 // Create server
 export const app: Express = express();
@@ -86,10 +87,16 @@ export const container = createContainer({
   await container.resolve("db").createConnection();
 })();
 
-import { SessionConfig } from "./config/session";
-
 const sessionMiddleware = session({
-  ...SessionConfig,
+  genid: () => uuidv4(),
+  secret: process.env.APP_KEY || "",
+  cookie: {
+    maxAge: 1000 * 60 * 60 * 48,
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+  },
+  saveUninitialized: false,
+  resave: false,
   store: MongoStore.create({
     client: mongoose.connection.getClient(),
     dbName: process.env.MONGO_DB_NAME,
