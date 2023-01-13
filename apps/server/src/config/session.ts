@@ -3,7 +3,7 @@ import MongoStore from "connect-mongo";
 import mongoose from "mongoose";
 import { SessionOptions } from "express-session";
 
-export const SessionConfig: Partial<SessionOptions> = {
+export const SessionConfig = {
   /* 
     Generate a unique session Id.
     default: Uses uuidv4 to generate unqiue session Id.
