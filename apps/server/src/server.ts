@@ -6,7 +6,6 @@ import express, { Express, NextFunction, Request, Response } from "express";
 import { Server, Socket } from "socket.io";
 import cors from "cors";
 import validationMiddleware from "./api/Middleware/ValidationMiddleware";
-import CorsConfig from "./config/cors";
 import session from "express-session";
 import SocketEvent from "./api/Enum/SocketEvent";
 import { CreatePartyDto } from "./api/Service/PartyService/dto";
@@ -44,7 +43,12 @@ server.on("error", (err) => {
 // Configure express
 app.use(express.json());
 app.use(validationMiddleware);
-app.use(cors(CorsConfig));
+app.use(
+  cors({
+    credentials: true,
+    origin: process.env.CLIENT_HOST,
+  })
+);
 
 export const container = createContainer({
   injectionMode: "CLASSIC",
