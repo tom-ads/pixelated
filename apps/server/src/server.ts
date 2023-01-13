@@ -25,6 +25,8 @@ import { PartyChannel } from "./api/Channels/PartyChannel";
 import { ChatChannel } from "./api/Channels/ChatChannel";
 import { GameChannel } from "./api/Channels/GameChannel";
 import { UserDocument } from "./api/Model/User";
+import MongoStore from "connect-mongo";
+import mongoose from "mongoose";
 
 // Create server
 export const app: Express = express();
@@ -85,7 +87,15 @@ export const container = createContainer({
 })();
 
 import { SessionConfig } from "./config/session";
-const sessionMiddleware = session(SessionConfig);
+
+const sessionMiddleware = session({
+  ...SessionConfig,
+  store: MongoStore.create({
+    client: mongoose.connection.getClient(),
+    dbName: process.env.MONGO_DB_NAME,
+    collectionName: "sessions",
+  }),
+});
 app.use(sessionMiddleware);
 
 app.post("/auth/register", container.resolve("authController").register);

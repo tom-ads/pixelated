@@ -25,11 +25,5 @@ export const SessionConfig = {
 
   saveUninitialized: false,
 
-  store: MongoStore.create({
-    client: mongoose.connection.getClient(),
-    dbName: process.env.MONGO_DB_NAME,
-    collectionName: "sessions",
-  }),
-
   resave: false,
 };
