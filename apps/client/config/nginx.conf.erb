@@ -35,6 +35,17 @@ http {
 		keepalive_timeout 5;
 		client_max_body_size <%= ENV['NGINX_CLIENT_MAX_BODY_SIZE'] || 1 %>M;
 
-    	root /app/dist;
+		location = /index.html {
+			add_header Cache-Control "no-store, no-cache";
+			add_header Strict-Transport-Security "max-age=31536002;";
+	  
+			try_files $uri $uri/ =404;
+		  }
+	  
+		  location / {
+			add_header 'Cache-Control' "public, max-age=3600";
+	  
+			try_files $uri $uri/ /index.html;
+		  }
 	}
 }
