@@ -31,6 +31,7 @@ jobs:
           heroku_app_name: ${{secrets.HEROKU_CLIENT_APP_NAME}}
           heroku_email: ${{secrets.HEROKU_EMAIL}}
           appdir: "apps/client"
+          procfile: "web: yarn"
 
   pixelated_staging_api:
     runs-on: ubuntu-latest
@@ -71,4 +72,4 @@ jobs:
           heroku_app_name: ${{secrets.HEROKU_API_APP_NAME}}
           heroku_email: ${{secrets.HEROKU_EMAIL}}
           appdir: "apps/server"
-          branch: main
+          procfile: "web: yarn"
