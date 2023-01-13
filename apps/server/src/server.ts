@@ -37,7 +37,7 @@ export const io = new Server(server, {
 });
 
 if (process.env.NODE_ENV !== "test") {
-  server.listen(process.env.APP_PORT, () =>
+  server.listen(process.env.PORT || 80, () =>
     console.log(`[API] Listening on port ${process.env.APP_PORT}`)
   );
 
