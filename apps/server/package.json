@@ -1,6 +1,7 @@
 {
   "name": "@pixelated/server",
   "version": "0.0.1",
+  "private": true,
   "scripts": {
     "dev": "nodemon ./src/server.ts",
     "test": "cross-env NODE_ENV=test MONGO_DB_NAME=pixelated_test jest",
