@@ -47,6 +47,7 @@ if (process.env.NODE_ENV !== "test") {
 }
 
 // Configure express
+app.enable("trust proxy");
 app.set("trust-proxy", true);
 app.use(express.json());
 app.use(validationMiddleware);
