@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "dev": "ts-node ./src/server.ts",
+    "dev": "nodemon ./src/server.ts",
     "build": "tsc --build",
     "serve": "yarn build && node build/src/server.js",
     "test": "cross-env NODE_ENV=test MONGO_DB_NAME=pixelated_test jest",

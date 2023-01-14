@@ -4,6 +4,7 @@ import { SessionServiceContract } from "../Service/SessionService";
 import LoginValidator from "../Validator/Auth/LoginValidator";
 import RegisterValidator from "../Validator/Auth/RegisterValidator";
 import { PartyServiceContract } from "../Service/PartyService";
+import { validate } from "../../helpers/validation";
 
 class AuthController {
   constructor(
@@ -16,12 +17,8 @@ class AuthController {
     this.sessionService = sessionService;
   }
 
-  register = async (
-    request: Request,
-    response: Response,
-    next: NextFunction
-  ) => {
-    const payload = await request.validate(RegisterValidator);
+  register = async (request: Request, response: Response) => {
+    const payload = await validate(RegisterValidator, request, response);
 
     const doesUserExist = await this.userService.exists(payload);
     if (doesUserExist) {
@@ -37,8 +34,8 @@ class AuthController {
       request.session.authenticated = true;
       await this.sessionService.saveSession(request.session);
       return response.status(201).json(createdUser.serialize());
-    } catch (error) {
-      return response.status(500).json({
+    } catch {
+      return response.status(400).json({
         message:
           "We cannot process your request right now, please try again later.",
       });
@@ -46,7 +43,7 @@ class AuthController {
   };
 
   login = async (request: Request, response: Response, next: NextFunction) => {
-    const payload = await request.validate(LoginValidator);
+    const payload = await validate(LoginValidator, request, response);
 
     const user = await this.userService.findByUsername(payload.username);
     if (!user || !(await user.checkPassword(payload.password))) {

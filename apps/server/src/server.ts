@@ -5,7 +5,7 @@ dotenv.config();
 import express, { Express, NextFunction, Request, Response } from "express";
 import { Server, Socket } from "socket.io";
 import cors from "cors";
-import validationMiddleware from "./api/Middleware/ValidationMiddleware";
+
 import session from "express-session";
 import SocketEvent from "./api/Enum/SocketEvent";
 import { CreatePartyDto } from "./api/Service/PartyService/dto";
@@ -50,7 +50,6 @@ if (process.env.NODE_ENV !== "test") {
 app.enable("trust proxy");
 app.set("trust-proxy", true);
 app.use(express.json());
-app.use(validationMiddleware);
 app.use(
   cors({
     credentials: true,
