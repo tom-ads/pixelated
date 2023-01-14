@@ -38,7 +38,6 @@ class AuthController {
       await this.sessionService.saveSession(request.session);
       return response.status(201).json(createdUser.serialize());
     } catch (error) {
-      next(error);
       return response.status(500).json({
         message:
           "We cannot process your request right now, please try again later.",

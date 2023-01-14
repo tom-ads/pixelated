@@ -1,6 +1,4 @@
 import { Session } from "express-session";
-import { nextTick } from "process";
-import { StartSessionDto } from "./dto";
 
 export interface SessionServiceContract {
   regenSession(session: Session): Promise<void>;
@@ -12,7 +10,9 @@ class SessionService implements SessionServiceContract {
     return new Promise((resolve, reject) => {
       session.regenerate((error) => {
         if (error) {
+          console.log(`[Api] Failed to regenerate session, due to: ${error}`);
           reject(error);
+          return;
         }
 
         resolve();
@@ -24,7 +24,9 @@ class SessionService implements SessionServiceContract {
     return new Promise((resolve, reject) => {
       session.save((error) => {
         if (error) {
+          console.log(`[Api] Failed to save session, due to: ${error}`);
           reject(error);
+          return;
         }
 
         resolve();

@@ -34,7 +34,7 @@ function validationMiddleware(
     // Check for validation errors, and throw a 422 if found
     const errors = validationResult(request);
     if (!errors.isEmpty()) {
-      response.status(400).json({ errors: errors.array() });
+      return response.status(400).json({ errors: errors.array() });
     }
 
     return matchedData(request, { onlyValidData: true }) as ValidatorReturn;
