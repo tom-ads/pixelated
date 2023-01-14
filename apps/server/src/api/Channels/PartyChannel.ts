@@ -192,6 +192,7 @@ export class PartyChannel {
     // End the party if last member of party
     if (existingParty.members?.length === 1) {
       await existingParty.delete();
+      await this.chatService.clearMessages();
       socket.in(existingParty.id).disconnectSockets(true);
       console.log(
         `[Party] Party ${existingParty.name}:${existingParty.id} has ended`
