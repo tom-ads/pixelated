@@ -1,8 +1,9 @@
 import { v4 as uuidv4 } from "uuid";
 import MongoStore from "connect-mongo";
 import mongoose from "mongoose";
+import { SessionOptions } from "express-session";
 
-export const SessionConfig = {
+export const SessionConfig: SessionOptions = {
   /* 
     Generate a unique session Id.
     default: Uses uuidv4 to generate unqiue session Id.
@@ -19,6 +20,7 @@ export const SessionConfig = {
   cookie: {
     maxAge: 1000 * 60 * 60 * 48,
     httpOnly: true,
+    sameSite: "none",
     secure: process.env.NODE_ENV === "production",
   },
 
