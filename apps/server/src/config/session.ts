@@ -25,7 +25,7 @@ export const SessionConfig = {
   saveUninitialized: false,
 
   // @ts-ignore
-  store: new MongoStore({
+  store: MongoStore.create({
     // @ts-ignore
     client: mongoose.connection.getClient(),
     dbName: process.env.MONGO_DB_NAME,
