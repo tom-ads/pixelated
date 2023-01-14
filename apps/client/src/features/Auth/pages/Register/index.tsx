@@ -19,8 +19,46 @@ type FormFields = {
 const ValidationSchema = z
   .object({
     username: z.string().min(1, { message: 'Username is required' }),
-    email: z.string().min(1, { message: 'Email is required' }).email({ message: 'Invalid email' }),
-    password: z.string().min(1, { message: 'Password is required' }),
+    email: z
+      .string()
+      .min(1, { message: 'Email is required' })
+      .email({ message: 'Valid email required' }),
+    password: z
+      .string()
+      .min(1, { message: 'Password is required' })
+      .superRefine((password, ctx) => {
+        const issues = {
+          charCount: {
+            achieved: password?.length >= 8,
+            suggestion: 'Password must be at least 8 characters long',
+          },
+          uppercase: {
+            achieved: /[A-Z]+/.test(password),
+            suggestion: 'Password must contain at least 1 uppercase',
+          },
+          lowercase: {
+            achieved: /[a-z]+/.test(password),
+            suggestion: 'Password must contain at least 1 lowercase',
+          },
+          number: {
+            achieved: /[0-9]+/.test(password),
+            suggestion: 'Password must contain at least 1 number',
+          },
+          symbol: {
+            achieved: /[~!@#$£%^&*]+/.test(password),
+            suggestion: 'Special character required (~!@#$£%^&*)',
+          },
+        }
+
+        const output = Object.values(issues)
+        if (output.some((i) => !i.achieved)) {
+          const suggestion = output.find((i) => !i.achieved)?.suggestion
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            message: suggestion ?? 'Password is invalid',
+          })
+        }
+      }),
     passwordConfirmation: z.string().min(1, { message: 'Confirmation is required' }),
   })
   .refine((data) => data.password === data.passwordConfirmation, {
@@ -34,7 +72,7 @@ export const RegisterPage = (): JSX.Element => {
 
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated)
 
-  const [registerMutation, { isLoading: isRegistering, isError }] = useRegisterMutation()
+  const [registerMutation, { isLoading: isRegistering }] = useRegisterMutation()
 
   const handleSubmit = async (data: FormFields) => {
     await registerMutation({
@@ -63,7 +101,7 @@ export const RegisterPage = (): JSX.Element => {
       <h1 className="text-3xl">Register</h1>
 
       <Form<FormFields, typeof ValidationSchema>
-        mode="onSubmit"
+        mode="all"
         className="py-11 gap-y-6"
         onSubmit={handleSubmit}
         validationSchema={ValidationSchema}
@@ -123,10 +161,6 @@ export const RegisterPage = (): JSX.Element => {
                 {errors.passwordConfirmation?.message}
               </FormErrorMessage>
             </FormControl>
-
-            <FormErrorMessage size="sm" hidden={!isError} className="text-center">
-              Username or email already exists
-            </FormErrorMessage>
 
             <div className="flex justify-end">
               <Button type="submit" loading={isRegistering}>
