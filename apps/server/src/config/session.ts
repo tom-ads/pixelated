@@ -4,7 +4,6 @@ import mongoose from "mongoose";
 import { SessionOptions } from "express-session";
 
 export const SessionConfig: SessionOptions = {
-  name: "sessionId",
   /* 
     Generate a unique session Id.
     default: Uses uuidv4 to generate unqiue session Id.
@@ -23,9 +22,8 @@ export const SessionConfig: SessionOptions = {
   cookie: {
     maxAge: 1000 * 60 * 60 * 48,
     httpOnly: true,
-    sameSite: "none",
+    domain: process.env.CLIENT_HOST,
     secure: process.env.NODE_ENV === "production",
-    path: "/",
   },
 
   proxy: false,
